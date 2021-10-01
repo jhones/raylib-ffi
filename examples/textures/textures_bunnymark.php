@@ -3,14 +3,31 @@
 declare(strict_types=1);
 
 use Nawarian\Raylib\Raylib;
-use Nawarian\Raylib\RaylibFactory;
-use Nawarian\Raylib\Types\Color;
-use Nawarian\Raylib\Types\Vector2;
+use Nawarian\Raylib\Types\{Color, Vector2};
+
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    ClearBackground,
+    CloseWindow,
+    DrawFPS,
+    DrawRectangle,
+    DrawText,
+    DrawTexture,
+    EndDrawing,
+    GetMousePosition,
+    GetRandomValue,
+    GetScreenHeight,
+    GetScreenWidth,
+    InitWindow,
+    IsMouseButtonDown,
+    LoadTexture,
+    SetTargetFPS,
+    TextFormat,
+    UnloadTexture,
+    WindowShouldClose
+};
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
 
 const MAX_BUNNIES = 50000;
 const MAX_BATCH_ELEMENTS = 8192;
@@ -20,10 +37,10 @@ const MAX_BATCH_ELEMENTS = 8192;
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, 'raylib [textures] example - bunnymark');
+InitWindow($screenWidth, $screenHeight, 'raylib [textures] example - bunnymark');
 
 // Load bunny texture
-$texBunny = $raylib->loadTexture(__DIR__ . '/resources/wabbit_alpha.png');
+$texBunny = LoadTexture(__DIR__ . '/resources/wabbit_alpha.png');
 
 $bunnies = [];    // Bunnies array
 foreach (range(0, MAX_BUNNIES) as $i) {
@@ -43,24 +60,24 @@ foreach (range(0, MAX_BUNNIES) as $i) {
 
 $bunniesCount = 0;           // Bunnies counter
 
-$raylib->setTargetFPS(60);               // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC key
+while (!WindowShouldClose()) {   // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
-    if ($raylib->isMouseButtonDown(Raylib::MOUSE_LEFT_BUTTON)) {
+    if (IsMouseButtonDown(Raylib::MOUSE_LEFT_BUTTON)) {
         // Create more bunnies
         for ($i = 0; $i < 100; $i++) {
             if ($bunniesCount < MAX_BUNNIES) {
-                $bunnies[$bunniesCount]->position = $raylib->getMousePosition();
-                $bunnies[$bunniesCount]->speed->x = (float) $raylib->getRandomValue(-250, 250) / 60.0;
-                $bunnies[$bunniesCount]->speed->y = (float) $raylib->getRandomValue(-250, 250) / 60.0;
+                $bunnies[$bunniesCount]->position = GetMousePosition();
+                $bunnies[$bunniesCount]->speed->x = (float) GetRandomValue(-250, 250) / 60.0;
+                $bunnies[$bunniesCount]->speed->y = (float) GetRandomValue(-250, 250) / 60.0;
                 $bunnies[$bunniesCount]->color = new Color(
-                    $raylib->getRandomValue(50, 240),
-                    $raylib->getRandomValue(80, 240),
-                    $raylib->getRandomValue(100, 240),
+                    GetRandomValue(50, 240),
+                    GetRandomValue(80, 240),
+                    GetRandomValue(100, 240),
                     255,
                 );
                 $bunniesCount++;
@@ -74,14 +91,14 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
         $bunnies[$i]->position->y += $bunnies[$i]->speed->y;
 
         if (
-            (($bunnies[$i]->position->x + $texBunny->width / 2) > $raylib->getScreenWidth())
+            (($bunnies[$i]->position->x + $texBunny->width / 2) > GetScreenWidth())
             || (($bunnies[$i]->position->x + $texBunny->width / 2) < 0)
         ) {
             $bunnies[$i]->speed->x *= -1;
         }
 
         if (
-            (($bunnies[$i]->position->y + $texBunny->height / 2) > $raylib->getScreenHeight())
+            (($bunnies[$i]->position->y + $texBunny->height / 2) > GetScreenHeight())
             || (($bunnies[$i]->position->y + $texBunny->height / 2 - 40) < 0)
         ) {
             $bunnies[$i]->speed->y *= -1;
@@ -91,9 +108,9 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
+    BeginDrawing();
 
-        $raylib->clearBackground(Color::rayWhite());
+        ClearBackground(Color::rayWhite());
 
         // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
         for ($i = 0; $i < $bunniesCount; $i++) {
@@ -103,7 +120,7 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
             // Process of sending data is costly and it could happen that GPU data has not been completely
             // processed for drawing while new data is tried to be sent (updating current in-use buffers)
             // it could generates a stall and consequently a frame drop, limiting the number of drawn bunnies
-            $raylib->drawTexture(
+            DrawTexture(
                 $texBunny,
                 (int) $bunnies[$i]->position->x,
                 (int) $bunnies[$i]->position->y,
@@ -111,26 +128,26 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
             );
         }
 
-        $raylib->drawRectangle(0, 0, $screenWidth, 40, Color::black());
-        $raylib->drawText($raylib->textFormat('bunnies: %d', $bunniesCount), 120, 10, 20, Color::green());
-        $raylib->drawText(
-            $raylib->textFormat('batched draw calls: %d', 1 + $bunniesCount / MAX_BATCH_ELEMENTS),
+        DrawRectangle(0, 0, $screenWidth, 40, Color::black());
+        DrawText(TextFormat('bunnies: %d', $bunniesCount), 120, 10, 20, Color::green());
+        DrawText(
+            TextFormat('batched draw calls: %d', 1 + $bunniesCount / MAX_BATCH_ELEMENTS),
             320,
             10,
             20,
-            Color::maroon(),
+            Color::maroon()
         );
 
-        $raylib->drawFPS(10, 10);
+        DrawFPS(10, 10);
 
     // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->unloadTexture($texBunny);    // Unload bunny texture
+UnloadTexture($texBunny);    // Unload bunny texture
 
-$raylib->closeWindow();              // Close window and OpenGL context
+CloseWindow();              // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

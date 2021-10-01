@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Nawarian\Raylib\{
-    Raylib,
-    RaylibFactory,
-};
+use Nawarian\Raylib\Raylib;
 use Nawarian\Raylib\Types\Color;
 
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    ClearBackground,
+    CloseWindow,
+    DrawText,
+    EndDrawing,
+    GetRandomValue,
+    InitWindow,
+    IsKeyPressed,
+    LoadStorageValue,
+    SaveStorageValue,
+    SetTargetFPS,
+    TextFormat,
+    WindowShouldClose
+};
 
 const STORAGE_POSITION_SCORE = 0;
 const STORAGE_POSITION_HISCORE = 1;
@@ -21,31 +31,31 @@ const STORAGE_POSITION_HISCORE = 1;
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, 'raylib [core] example - storage save/load values');
+InitWindow($screenWidth, $screenHeight, 'raylib [core] example - storage save/load values');
 
 $score = 0;
 $hiscore = 0;
 $framesCounter = 0;
 
-$raylib->setTargetFPS(60);               // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {  // Detect window close button or ESC key
+while (!WindowShouldClose()) {  // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
-    if ($raylib->isKeyPressed(Raylib::KEY_R)) {
-        $score = $raylib->getRandomValue(1000, 2000);
-        $hiscore = $raylib->getRandomValue(2000, 4000);
+    if (IsKeyPressed(Raylib::KEY_R)) {
+        $score = GetRandomValue(1000, 2000);
+        $hiscore = GetRandomValue(2000, 4000);
     }
 
-    if ($raylib->isKeyPressed(Raylib::KEY_ENTER)) {
-        $raylib->saveStorageValue(STORAGE_POSITION_SCORE, $score);
-        $raylib->saveStorageValue(STORAGE_POSITION_HISCORE, $hiscore);
-    } elseif ($raylib->isKeyPressed(Raylib::KEY_SPACE)) {
+    if (IsKeyPressed(Raylib::KEY_ENTER)) {
+        SaveStorageValue(STORAGE_POSITION_SCORE, $score);
+        SaveStorageValue(STORAGE_POSITION_HISCORE, $hiscore);
+    } elseif (IsKeyPressed(Raylib::KEY_SPACE)) {
         // NOTE: If requested position could not be found, value 0 is returned
-        $score = $raylib->loadStorageValue(STORAGE_POSITION_SCORE);
-        $hiscore = $raylib->loadStorageValue(STORAGE_POSITION_HISCORE);
+        $score = LoadStorageValue(STORAGE_POSITION_SCORE);
+        $hiscore = LoadStorageValue(STORAGE_POSITION_HISCORE);
     }
 
     $framesCounter++;
@@ -53,24 +63,24 @@ while (!$raylib->windowShouldClose()) {  // Detect window close button or ESC ke
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
+    BeginDrawing();
 
-        $raylib->clearBackground(Color::rayWhite());
+        ClearBackground(Color::rayWhite());
 
-        $raylib->drawText($raylib->textFormat('SCORE: %d', $score), 280, 130, 40, Color::maroon());
-        $raylib->drawText($raylib->textFormat('HI-SCORE: %d', $hiscore), 210, 200, 50, Color::black());
+        DrawText(TextFormat('SCORE: %d', $score), 280, 130, 40, Color::maroon());
+        DrawText(TextFormat('HI-SCORE: %d', $hiscore), 210, 200, 50, Color::black());
 
-        $raylib->drawText($raylib->textFormat('frames: %d', $framesCounter), 10, 10, 20, Color::lime());
+        DrawText(TextFormat('frames: %d', $framesCounter), 10, 10, 20, Color::lime());
 
-        $raylib->drawText('Press R to generate random numbers', 220, 40, 20, Color::lightGray());
-        $raylib->drawText('Press ENTER to SAVE values', 250, 310, 20, Color::lightGray());
-        $raylib->drawText('Press SPACE to LOAD values', 252, 350, 20, Color::lightGray());
+        DrawText('Press R to generate random numbers', 220, 40, 20, Color::lightGray());
+        DrawText('Press ENTER to SAVE values', 250, 310, 20, Color::lightGray());
+        DrawText('Press SPACE to LOAD values', 252, 350, 20, Color::lightGray());
 
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();        // Close window and OpenGL context
+CloseWindow();        // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

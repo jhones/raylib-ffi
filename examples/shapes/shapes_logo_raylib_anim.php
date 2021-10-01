@@ -3,20 +3,31 @@
 declare(strict_types=1);
 
 use Nawarian\Raylib\Raylib;
-use Nawarian\Raylib\RaylibFactory;
 use Nawarian\Raylib\Types\Color;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    ClearBackground,
+    CloseWindow,
+    DrawRectangle,
+    DrawText,
+    EndDrawing,
+    Fade,
+    InitWindow,
+    IsKeyPressed,
+    SetTargetFPS,
+    TextSubtext,
+    WindowShouldClose
+};
 
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 // Initialization
 //--------------------------------------------------------------------------------------
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, 'raylib [shapes] example - raylib logo animation');
+InitWindow($screenWidth, $screenHeight, 'raylib [shapes] example - raylib logo animation');
 
 $logoPositionX = $screenWidth / 2 - 128;
 $logoPositionY = $screenHeight / 2 - 128;
@@ -33,11 +44,11 @@ $rightSideRecHeight = 16;
 $state = 0;                  // Tracking animation states (State Machine)
 $alpha = 1.0;             // Useful for fading
 
-$raylib->setTargetFPS(60);               // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC key
+while (!WindowShouldClose()) {   // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
     if ($state == 0) {                // State 0: Small box blinking
@@ -78,7 +89,7 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
             }
         }
     } else {           // State 4: Reset and Replay
-        if ($raylib->isKeyPressed(Raylib::KEY_R)) {
+        if (IsKeyPressed(Raylib::KEY_R)) {
             $framesCounter = 0;
             $lettersCount = 0;
 
@@ -96,79 +107,67 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
+    BeginDrawing();
         // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-        $raylib->clearBackground(Color::rayWhite());
+        ClearBackground(Color::rayWhite());
 
         if ($state === 0) {
             if (($framesCounter / 15) % 2) {
-                $raylib->drawRectangle($logoPositionX, $logoPositionY, 16, 16, Color::black());
+                DrawRectangle($logoPositionX, $logoPositionY, 16, 16, Color::black());
             }
         } elseif ($state === 1) {
-            $raylib->drawRectangle($logoPositionX, $logoPositionY, $topSideRecWidth, 16, Color::black());
-            $raylib->drawRectangle($logoPositionX, $logoPositionY, 16, $leftSideRecHeight, Color::black());
+            DrawRectangle($logoPositionX, $logoPositionY, $topSideRecWidth, 16, Color::black());
+            DrawRectangle($logoPositionX, $logoPositionY, 16, $leftSideRecHeight, Color::black());
         } elseif ($state === 2) {
-            $raylib->drawRectangle($logoPositionX, $logoPositionY, $topSideRecWidth, 16, Color::black());
-            $raylib->drawRectangle($logoPositionX, $logoPositionY, 16, $leftSideRecHeight, Color::black());
+            DrawRectangle($logoPositionX, $logoPositionY, $topSideRecWidth, 16, Color::black());
+            DrawRectangle($logoPositionX, $logoPositionY, 16, $leftSideRecHeight, Color::black());
 
-            $raylib->drawRectangle($logoPositionX + 240, $logoPositionY, 16, $rightSideRecHeight, Color::black());
-            $raylib->drawRectangle($logoPositionX, $logoPositionY + 240, $bottomSideRecWidth, 16, Color::black());
+            DrawRectangle($logoPositionX + 240, $logoPositionY, 16, $rightSideRecHeight, Color::black());
+            DrawRectangle($logoPositionX, $logoPositionY + 240, $bottomSideRecWidth, 16, Color::black());
         } elseif ($state === 3) {
-            $raylib->drawRectangle(
-                $logoPositionX,
-                $logoPositionY,
-                $topSideRecWidth,
-                16,
-                $raylib->fade(Color::black(), $alpha),
-            );
-            $raylib->drawRectangle(
+            DrawRectangle($logoPositionX, $logoPositionY, $topSideRecWidth, 16, Fade(Color::black(), $alpha));
+            DrawRectangle(
                 $logoPositionX,
                 $logoPositionY + 16,
                 16,
                 $leftSideRecHeight - 32,
-                $raylib->fade(Color::black(), $alpha),
+                Fade(Color::black(), $alpha)
             );
 
-            $raylib->drawRectangle(
+            DrawRectangle(
                 $logoPositionX + 240,
                 $logoPositionY + 16,
                 16,
                 $rightSideRecHeight - 32,
-                $raylib->fade(Color::black(), $alpha),
+                Fade(Color::black(), $alpha)
             );
-            $raylib->drawRectangle(
-                $logoPositionX,
-                $logoPositionY + 240,
-                $bottomSideRecWidth,
-                16,
-                $raylib->fade(Color::black(), $alpha),
-            );
+            DrawRectangle($logoPositionX, $logoPositionY + 240, $bottomSideRecWidth, 16, Fade(Color::black(), $alpha));
 
-            $raylib->drawRectangle(
+            DrawRectangle(
                 (int) ($screenWidth / 2 - 112),
                 (int) ($screenHeight / 2 - 112),
                 224,
                 224,
-                $raylib->fade(Color::rayWhite(), $alpha),
+                Fade(Color::rayWhite(), $alpha)
             );
 
-            $raylib->drawText(
-                $raylib->textSubtext('raylib', 0, $lettersCount),
+            DrawText(
+                TextSubtext('raylib', 0, $lettersCount),
                 (int) ($screenWidth / 2 - 44),
                 (int) ($screenHeight / 2 + 48),
                 50,
-                $raylib->fade(Color::black(), $alpha),
+                Fade(Color::black(), $alpha)
             );
         } else {
-            $raylib->drawText('[R] REPLAY', 340, 200, 20, Color::gray());
+            DrawText('[R] REPLAY', 340, 200, 20, Color::gray());
         }
 
         // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();        // Close window and OpenGL context
+CloseWindow();        // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

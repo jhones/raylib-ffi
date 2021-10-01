@@ -10,20 +10,36 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Nawarian\Raylib\{
-    Raylib,
-    RaylibFactory,
-};
+use Nawarian\Raylib\Raylib;
 use Nawarian\Raylib\Types\{
     Camera2D,
     Color,
     Rectangle,
     Vector2,
 };
-
-$raylibFactory = new RaylibFactory();
-
-$raylib = $raylibFactory->newInstance();
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    BeginMode2D,
+    ClearBackground,
+    CloseWindow,
+    DrawRectangleRec,
+    DrawText,
+    EndDrawing,
+    EndMode2D,
+    GetFrameTime,
+    GetMouseWheelMove,
+    GetScreenToWorld2D,
+    GetWorldToScreen2D,
+    InitWindow,
+    IsKeyDown,
+    IsKeyPressed,
+    SetTargetFPS,
+    Vector2Add,
+    Vector2Length,
+    Vector2Scale,
+    Vector2Subtract,
+    WindowShouldClose
+};
 
 const G = 400;
 const PLAYER_JUMP_SPD = 350.0;
@@ -55,17 +71,17 @@ class EnvItem
     }
 }
 
-function UpdatePlayer(Raylib $raylib, Player $player, iterable $envItems, float $delta): void
+function UpdatePlayer(Player $player, iterable $envItems, float $delta): void
 {
-    if ($raylib->isKeyDown(Raylib::KEY_LEFT)) {
+    if (IsKeyDown(Raylib::KEY_LEFT)) {
         $player->position->x -= PLAYER_HOR_SPD * $delta;
     }
 
-    if ($raylib->isKeyDown(Raylib::KEY_RIGHT)) {
+    if (IsKeyDown(Raylib::KEY_RIGHT)) {
         $player->position->x += PLAYER_HOR_SPD * $delta;
     }
 
-    if ($raylib->isKeyDown(Raylib::KEY_SPACE) && $player->canJump) {
+    if (IsKeyDown(Raylib::KEY_SPACE) && $player->canJump) {
         $player->speed = -PLAYER_JUMP_SPD;
         $player->canJump = false;
     }
@@ -96,7 +112,6 @@ function UpdatePlayer(Raylib $raylib, Player $player, iterable $envItems, float 
 }
 
 function UpdateCameraCenter(
-    Raylib $_raylib,
     Camera2D $camera,
     Player $player,
     iterable $_envItems,
@@ -109,7 +124,6 @@ function UpdateCameraCenter(
 }
 
 function UpdateCameraCenterInsideMap(
-    Raylib $raylib,
     Camera2D $camera,
     Player $player,
     iterable $envItems,
@@ -132,8 +146,8 @@ function UpdateCameraCenterInsideMap(
         $maxY = max($ei->rect->y + $ei->rect->height, $maxY);
     }
 
-    $max = $raylib->getWorldToScreen2D(new Vector2($maxX, $maxY), $camera);
-    $min = $raylib->getWorldToScreen2D(new Vector2($minX, $minY), $camera);
+    $max = GetWorldToScreen2D(new Vector2($maxX, $maxY), $camera);
+    $min = GetWorldToScreen2D(new Vector2($minX, $minY), $camera);
 
     if ($max->x < $width) {
         $camera->offset->x = $width - ($max->x - $width / 2);
@@ -152,7 +166,6 @@ function UpdateCameraCenterInsideMap(
 }
 
 function UpdateCameraCenterSmoothFollow(
-    Raylib $raylib,
     Camera2D $camera,
     Player $player,
     iterable $_envItems,
@@ -165,20 +178,16 @@ function UpdateCameraCenterSmoothFollow(
     $fractionSpeed = 0.8;
 
     $camera->offset = new Vector2($width / 2.0, $height / 2.0);
-    $diff = $raylib->vector2Subtract($player->position, $camera->target);
-    $length = $raylib->vector2Length($diff);
+    $diff = Vector2Subtract($player->position, $camera->target);
+    $length = Vector2Length($diff);
 
     if ($length > $minEffectLength) {
         $speed = max($fractionSpeed * $length, $minSpeed);
-        $camera->target = $raylib->vector2Add(
-            $camera->target,
-            $raylib->vector2Scale($diff, $speed * $delta / $length),
-        );
+        $camera->target = Vector2Add($camera->target, Vector2Scale($diff, $speed * $delta / $length));
     }
 }
 
 function UpdateCameraEvenOutOnLanding(
-    Raylib $_raylib,
     Camera2D $camera,
     Player $player,
     iterable $_envItems,
@@ -219,7 +228,6 @@ function UpdateCameraEvenOutOnLanding(
 }
 
 function UpdateCameraPlayerBoundsPush(
-    Raylib $raylib,
     Camera2D $camera,
     Player $player,
     iterable $_envItems,
@@ -229,14 +237,14 @@ function UpdateCameraPlayerBoundsPush(
 ): void {
     $bbox = new Vector2(0.2, 0.2);
 
-    $bboxWorldMin = $raylib->getScreenToWorld2D(
+    $bboxWorldMin = GetScreenToWorld2D(
         new Vector2((1 - $bbox->x) * 0.5 * $width, (1 - $bbox->y) * 0.5 * $height),
-        $camera,
+        $camera
     );
 
-    $bboxWorldMax = $raylib->getScreenToWorld2D(
+    $bboxWorldMax = GetScreenToWorld2D(
         new Vector2((1 + $bbox->x) * 0.5 * $width, (1 + $bbox->y) * 0.5 * $height),
-        $camera,
+        $camera
     );
 
     $camera->offset = new Vector2((1 - $bbox->x) * 0.5 * $width, (1 - $bbox->y) * 0.5 * $height);
@@ -263,7 +271,7 @@ function UpdateCameraPlayerBoundsPush(
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, "raylib [core] example - 2d camera");
+InitWindow($screenWidth, $screenHeight, "raylib [core] example - 2d camera");
 
 $player = new Player(400, 280);
 $envItems = [
@@ -300,18 +308,18 @@ $cameraDescriptions = [
     "Player push camera on getting too close to screen edge"
 ];
 
-$raylib->setTargetFPS(60);
+SetTargetFPS(60);
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {
+while (!WindowShouldClose()) {
     // Update
     //----------------------------------------------------------------------------------
-    $deltaTime = $raylib->getFrameTime();
+    $deltaTime = GetFrameTime();
 
-    UpdatePlayer($raylib, $player, $envItems, $deltaTime);
+    UpdatePlayer($player, $envItems, $deltaTime);
 
-    $camera->zoom += $raylib->getMouseWheelMove() * 0.05;
+    $camera->zoom += GetMouseWheelMove() * 0.05;
 
     if ($camera->zoom > 3.0) {
         $camera->zoom = 3.0;
@@ -319,18 +327,17 @@ while (!$raylib->windowShouldClose()) {
         $camera->zoom = 0.25;
     }
 
-    if ($raylib->isKeyPressed(Raylib::KEY_R)) {
+    if (IsKeyPressed(Raylib::KEY_R)) {
         $camera->zoom = 1.0;
         $player->position = new Vector2(400, 280);
     }
 
-    if ($raylib->isKeyPressed(Raylib::KEY_C)) {
+    if (IsKeyPressed(Raylib::KEY_C)) {
         $cameraOption = ($cameraOption + 1) % count($cameraUpdateFunctions);
     }
 
     // Call update camera function by its pointer
     $cameraUpdateFunctions[$cameraOption](
-        $raylib,
         $camera,
         $player,
         $envItems,
@@ -342,15 +349,15 @@ while (!$raylib->windowShouldClose()) {
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
+    BeginDrawing();
 
-        $raylib->clearBackground(Color::lightGray());
+        ClearBackground(Color::lightGray());
 
-        $raylib->beginMode2D($camera);
+        BeginMode2D($camera);
 
             // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
             foreach ($envItems as $ei) {
-                $raylib->drawRectangleRec($ei->rect, $ei->color);
+                DrawRectangleRec($ei->rect, $ei->color);
             }
             // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 
@@ -360,23 +367,23 @@ while (!$raylib->windowShouldClose()) {
                 40,
                 40,
             );
-            $raylib->drawRectangleRec($playerRect, Color::red());
+            DrawRectangleRec($playerRect, Color::red());
 
-        $raylib->endMode2D();
+        EndMode2D();
 
-        $raylib->drawText("Controls:", 20, 20, 10, Color::black());
-        $raylib->drawText("- Right/Left to move", 40, 40, 10, Color::darkGray());
-        $raylib->drawText("- Space to jump", 40, 60, 10, Color::darkGray());
-        $raylib->drawText("- Mouse Wheel to Zoom in-out, R to reset zoom", 40, 80, 10, Color::darkGray());
-        $raylib->drawText("- C to change camera mode", 40, 100, 10, Color::darkGray());
-        $raylib->drawText("Current camera mode:", 20, 120, 10, Color::darkGray());
-        $raylib->drawText($cameraDescriptions[$cameraOption], 40, 140, 10, Color::darkGray());
+        DrawText("Controls:", 20, 20, 10, Color::black());
+        DrawText("- Right/Left to move", 40, 40, 10, Color::darkGray());
+        DrawText("- Space to jump", 40, 60, 10, Color::darkGray());
+        DrawText("- Mouse Wheel to Zoom in-out, R to reset zoom", 40, 80, 10, Color::darkGray());
+        DrawText("- C to change camera mode", 40, 100, 10, Color::darkGray());
+        DrawText("Current camera mode:", 20, 120, 10, Color::darkGray());
+        DrawText($cameraDescriptions[$cameraOption], 40, 140, 10, Color::darkGray());
 
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();        // Close window and OpenGL context
+CloseWindow();        // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

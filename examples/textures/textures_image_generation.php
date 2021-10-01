@@ -3,13 +3,36 @@
 declare(strict_types=1);
 
 use Nawarian\Raylib\Raylib;
-use Nawarian\Raylib\RaylibFactory;
 use Nawarian\Raylib\Types\Color;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    ClearBackground,
+    CloseWindow,
+    DrawRectangle,
+    DrawRectangleLines,
+    DrawText,
+    DrawTexture,
+    EndDrawing,
+    Fade,
+    GenImageCellular,
+    GenImageChecked,
+    GenImageGradientH,
+    GenImageGradientRadial,
+    GenImageGradientV,
+    GenImagePerlinNoise,
+    GenImageWhiteNoise,
+    InitWindow,
+    IsKeyPressed,
+    IsMouseButtonPressed,
+    LoadTextureFromImage,
+    SetTargetFPS,
+    UnloadImage,
+    UnloadTexture,
+    WindowShouldClose
+};
 
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 const NUM_TEXTURES = 7;     // Currently we have 7 generation algorithms
 
@@ -18,45 +41,45 @@ const NUM_TEXTURES = 7;     // Currently we have 7 generation algorithms
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, 'raylib [textures] example - procedural images generation');
+InitWindow($screenWidth, $screenHeight, 'raylib [textures] example - procedural images generation');
 
-$verticalGradient = $raylib->genImageGradientV($screenWidth, $screenHeight, Color::red(), Color::blue());
-$horizontalGradient = $raylib->genImageGradientH($screenWidth, $screenHeight, Color::red(), Color::blue());
-$radialGradient = $raylib->genImageGradientRadial($screenWidth, $screenHeight, 0.0, Color::white(), Color::black());
-$checked = $raylib->genImageChecked($screenWidth, $screenHeight, 32, 32, Color::red(), Color::blue());
-$whiteNoise = $raylib->genImageWhiteNoise($screenWidth, $screenHeight, 0.5);
-$perlinNoise = $raylib->genImagePerlinNoise($screenWidth, $screenHeight, 50, 50, 4.0);
-$cellular = $raylib->genImageCellular($screenWidth, $screenHeight, 32);
+$verticalGradient = GenImageGradientV($screenWidth, $screenHeight, Color::red(), Color::blue());
+$horizontalGradient = GenImageGradientH($screenWidth, $screenHeight, Color::red(), Color::blue());
+$radialGradient = GenImageGradientRadial($screenWidth, $screenHeight, 0.0, Color::white(), Color::black());
+$checked = GenImageChecked($screenWidth, $screenHeight, 32, 32, Color::red(), Color::blue());
+$whiteNoise = GenImageWhiteNoise($screenWidth, $screenHeight, 0.5);
+$perlinNoise = GenImagePerlinNoise($screenWidth, $screenHeight, 50, 50, 4.0);
+$cellular = GenImageCellular($screenWidth, $screenHeight, 32);
 
 $textures = [
-    $raylib->loadTextureFromImage($verticalGradient),
-    $raylib->loadTextureFromImage($horizontalGradient),
-    $raylib->loadTextureFromImage($radialGradient),
-    $raylib->loadTextureFromImage($checked),
-    $raylib->loadTextureFromImage($whiteNoise),
-    $raylib->loadTextureFromImage($perlinNoise),
-    $raylib->loadTextureFromImage($cellular),
+    LoadTextureFromImage($verticalGradient),
+    LoadTextureFromImage($horizontalGradient),
+    LoadTextureFromImage($radialGradient),
+    LoadTextureFromImage($checked),
+    LoadTextureFromImage($whiteNoise),
+    LoadTextureFromImage($perlinNoise),
+    LoadTextureFromImage($cellular),
 ];
 
 // Unload image data (CPU RAM)
-$raylib->unloadImage($verticalGradient);
-$raylib->unloadImage($horizontalGradient);
-$raylib->unloadImage($radialGradient);
-$raylib->unloadImage($checked);
-$raylib->unloadImage($whiteNoise);
-$raylib->unloadImage($perlinNoise);
-$raylib->unloadImage($cellular);
+UnloadImage($verticalGradient);
+UnloadImage($horizontalGradient);
+UnloadImage($radialGradient);
+UnloadImage($checked);
+UnloadImage($whiteNoise);
+UnloadImage($perlinNoise);
+UnloadImage($cellular);
 
 $currentTexture = 0;
 
-$raylib->setTargetFPS(60);
+SetTargetFPS(60);
 //---------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {
+while (!WindowShouldClose()) {
     // Update
     //----------------------------------------------------------------------------------
-    if ($raylib->isMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON) || $raylib->isKeyPressed(Raylib::KEY_RIGHT)) {
+    if (IsMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON) || IsKeyPressed(Raylib::KEY_RIGHT)) {
         $currentTexture = ($currentTexture + 1) % NUM_TEXTURES;     // Cycle between the textures
     }
     //----------------------------------------------------------------------------------
@@ -64,41 +87,41 @@ while (!$raylib->windowShouldClose()) {
     // Draw
     //----------------------------------------------------------------------------------
     //phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-    $raylib->beginDrawing();
-        $raylib->clearBackground(Color::rayWhite());
+    BeginDrawing();
+        ClearBackground(Color::rayWhite());
 
-        $raylib->drawTexture($textures[$currentTexture], 0, 0, Color::white());
+        DrawTexture($textures[$currentTexture], 0, 0, Color::white());
 
-        $raylib->drawRectangle(30, 400, 325, 30, $raylib->fade(Color::skyBlue(), 0.5));
-        $raylib->drawRectangleLines(30, 400, 325, 30, $raylib->fade(Color::white(), 0.5));
-        $raylib->drawText('MOUSE LEFT BUTTON to CYCLE PROCEDURAL TEXTURES', 40, 410, 10, Color::white());
+        DrawRectangle(30, 400, 325, 30, Fade(Color::skyBlue(), 0.5));
+        DrawRectangleLines(30, 400, 325, 30, Fade(Color::white(), 0.5));
+        DrawText('MOUSE LEFT BUTTON to CYCLE PROCEDURAL TEXTURES', 40, 410, 10, Color::white());
 
         switch ($currentTexture) {
             case 0:
-                $raylib->drawText('VERTICAL GRADIENT', 560, 10, 20, Color::rayWhite());
+                DrawText('VERTICAL GRADIENT', 560, 10, 20, Color::rayWhite());
                 break;
             case 1:
-                $raylib->drawText('HORIZONTAL GRADIENT', 540, 10, 20, Color::rayWhite());
+                DrawText('HORIZONTAL GRADIENT', 540, 10, 20, Color::rayWhite());
                 break;
             case 2:
-                $raylib->drawText('RADIAL GRADIENT', 580, 10, 20, Color::lightGray());
+                DrawText('RADIAL GRADIENT', 580, 10, 20, Color::lightGray());
                 break;
             case 3:
-                $raylib->drawText('CHECKED', 680, 10, 20, Color::rayWhite());
+                DrawText('CHECKED', 680, 10, 20, Color::rayWhite());
                 break;
             case 4:
-                $raylib->drawText('WHITE NOISE', 640, 10, 20, Color::red());
+                DrawText('WHITE NOISE', 640, 10, 20, Color::red());
                 break;
             case 5:
-                $raylib->drawText('PERLIN NOISE', 630, 10, 20, Color::rayWhite());
+                DrawText('PERLIN NOISE', 630, 10, 20, Color::rayWhite());
                 break;
             case 6:
-                $raylib->drawText('CELLULAR', 670, 10, 20, Color::rayWhite());
+                DrawText('CELLULAR', 670, 10, 20, Color::rayWhite());
                 break;
             default:
                 break;
         }
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
@@ -107,7 +130,7 @@ while (!$raylib->windowShouldClose()) {
 
 // Unload textures data (GPU VRAM)
 foreach ($textures as $texture) {
-    $raylib->unloadTexture($texture);
+    UnloadTexture($texture);
 }
 
-$raylib->closeWindow();
+CloseWindow();

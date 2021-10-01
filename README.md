@@ -16,28 +16,33 @@ See [examples/](https://github.com/nawarian/raylib-ffi/tree/main/examples/) for 
 Every program will look like the following at first:
 
 ```php
-/**
- * The factory class will create an instance based on your
- * Operating System.
- */
-$factory = new \Nawarian\Raylib\RaylibFactory();
-$raylib = $factory->newInstance();
+<?php
 
-/**
- * You may normally call Raylib functions from the $raylib object now
- */
-$raylib->initWindow(800, 600, 'My raylib Window');
+declare(strict_types=1);
 
-$white = new \Nawarian\Raylib\Types\Color(255, 255, 255, 255);
-$red = new \Nawarian\Raylib\Types\Color(255, 0, 0, 255);
-while (!$raylib->windowShouldClose()) {
-    $raylib->beginDrawing();
-        $raylib->clearBackground($white);
-        $raylib->drawText('Hello from raylib-ffi!', 400, 300, 20, $red);
-    $raylib->endDrawing();
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Nawarian\Raylib\Types\Color;
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    ClearBackground,
+    CloseWindow,
+    DrawText,
+    EndDrawing,
+    InitWindow,
+    WindowShouldClose
+};
+
+InitWindow(800, 600, 'My raylib Window using FFI');
+
+while (!WindowShouldClose()) {
+    BeginDrawing();
+        ClearBackground(Color::white());
+        DrawText('Hello from raylib-ffi!', 400, 300, 20, Color::red());
+    EndDrawing();
 }
 
-$raylib->closeWindow();
+CloseWindow();
 ```
 
 ### Recent Impressive Screenshot
@@ -57,21 +62,21 @@ Below you'll find the list of things to be developed in this project.
 
 - [ ] Automatic checks on `main` and Pull Requests: compile raylib and test FFI against Linux, Windows and MacOS
 - [x] Rename methods in `Raylib` to follow No Camel Caps convention (PSR-1)
-- [ ] Make `RaylibFactory` detect current OS and load `raylib.h` accordingly
-- [ ] Create a `functions.php` file that will mimic Raylib by registering global functions
+- [x] Make `RaylibFactory` detect current OS and load `raylib.h` accordingly
+- [x] Create a `generated-functions.php` file that will mimic Raylib by registering global functions
 
 ### FFI Proxy
 
 - [x] `void InitWindow(int width, int height, const char *title)`
 - [x] `bool WindowShouldClose(void)`
 - [x] `void CloseWindow(void)`
-- [ ] `bool IsWindowReady(void)`
-- [ ] `bool IsWindowFullscreen(void)`
-- [ ] `bool IsWindowHidden(void)`
-- [ ] `bool IsWindowMinimized(void)`
-- [ ] `bool IsWindowMaximized(void)`
-- [ ] `bool IsWindowFocused(void)`
-- [ ] `bool IsWindowResized(void)`
+- [x] `bool IsWindowReady(void)`
+- [x] `bool IsWindowFullscreen(void)`
+- [x] `bool IsWindowHidden(void)`
+- [x] `bool IsWindowMinimized(void)`
+- [x] `bool IsWindowMaximized(void)`
+- [x] `bool IsWindowFocused(void)`
+- [x] `bool IsWindowResized(void)`
 - [x] `bool IsWindowState(unsigned int flag)`
 - [x] `void SetWindowState(unsigned int flags)`
 - [x] `void ClearWindowState(unsigned int flags)`
@@ -79,33 +84,33 @@ Below you'll find the list of things to be developed in this project.
 - [x] `void MaximizeWindow(void)`
 - [x] `void MinimizeWindow(void)`
 - [x] `void RestoreWindow(void)`
-- [ ] `void SetWindowIcon(Image image)`
-- [ ] `void SetWindowTitle(const char *title)`
-- [ ] `void SetWindowPosition(int x, int y)`
-- [ ] `void SetWindowMonitor(int monitor)`
-- [ ] `void SetWindowMinSize(int width, int height)`
-- [ ] `void SetWindowSize(int width, int height)`
+- [x] `void SetWindowIcon(Image image)`
+- [x] `void SetWindowTitle(const char *title)`
+- [x] `void SetWindowPosition(int x, int y)`
+- [x] `void SetWindowMonitor(int monitor)`
+- [x] `void SetWindowMinSize(int width, int height)`
+- [x] `void SetWindowSize(int width, int height)`
 - [ ] `void *GetWindowHandle(void)`
 - [x] `int GetScreenWidth(void)`
 - [x] `int GetScreenHeight(void)`
-- [ ] `int GetMonitorCount(void)`
-- [ ] `Vector2 GetMonitorPosition(int monitor)`
-- [ ] `int GetMonitorWidth(int monitor)`
-- [ ] `int GetMonitorHeight(int monitor)`
-- [ ] `int GetMonitorPhysicalWidth(int monitor)`
-- [ ] `int GetMonitorPhysicalHeight(int monitor)`
-- [ ] `int GetMonitorRefreshRate(int monitor)`
-- [ ] `Vector2 GetWindowPosition(void)`
-- [ ] `Vector2 GetWindowScaleDPI(void)`
-- [ ] `const char *GetMonitorName(int monitor)`
-- [ ] `void SetClipboardText(const char *text)`
-- [ ] `const char *GetClipboardText(void)`
-- [ ] `void ShowCursor(void)`
-- [ ] `void HideCursor(void)`
-- [ ] `bool IsCursorHidden(void)`
-- [ ] `void EnableCursor(void)`
-- [ ] `void DisableCursor(void)`
-- [ ] `bool IsCursorOnScreen(void)`
+- [x] `int GetMonitorCount(void)`
+- [x] `Vector2 GetMonitorPosition(int monitor)`
+- [x] `int GetMonitorWidth(int monitor)`
+- [x] `int GetMonitorHeight(int monitor)`
+- [x] `int GetMonitorPhysicalWidth(int monitor)`
+- [x] `int GetMonitorPhysicalHeight(int monitor)`
+- [x] `int GetMonitorRefreshRate(int monitor)`
+- [x] `Vector2 GetWindowPosition(void)`
+- [x] `Vector2 GetWindowScaleDPI(void)`
+- [x] `const char *GetMonitorName(int monitor)`
+- [x] `void SetClipboardText(const char *text)`
+- [x] `const char *GetClipboardText(void)`
+- [x] `void ShowCursor(void)`
+- [x] `void HideCursor(void)`
+- [x] `bool IsCursorHidden(void)`
+- [x] `void EnableCursor(void)`
+- [x] `void DisableCursor(void)`
+- [x] `bool IsCursorOnScreen(void)`
 - [x] `void ClearBackground(Color color)`
 - [x] `void BeginDrawing(void)`
 - [x] `void EndDrawing(void)`
@@ -113,13 +118,13 @@ Below you'll find the list of things to be developed in this project.
 - [x] `void EndMode2D(void)`
 - [x] `void BeginMode3D(Camera3D camera)`
 - [x] `void EndMode3D(void)`
-- [ ] `void BeginTextureMode(RenderTexture2D target)`
-- [ ] `void EndTextureMode(void)`
+- [x] `void BeginTextureMode(RenderTexture2D target)`
+- [x] `void EndTextureMode(void)`
 - [x] `void BeginScissorMode(int x, int y, int width, int height)`
 - [x] `void EndScissorMode(void)`
 - [x] `Ray GetMouseRay(Vector2 mousePosition, Camera camera)`
-- [ ] `Matrix GetCameraMatrix(Camera camera)`
-- [ ] `Matrix GetCameraMatrix2D(Camera2D camera)`
+- [x] `Matrix GetCameraMatrix(Camera camera)`
+- [x] `Matrix GetCameraMatrix2D(Camera2D camera)`
 - [x] `Vector2 GetWorldToScreen(Vector3 position, Camera camera)`
 - [ ] `Vector2 GetWorldToScreenEx(Vector3 position, Camera camera, int width, int height)`
 - [x] `Vector2 GetWorldToScreen2D(Vector2 position, Camera2D camera)`
@@ -132,7 +137,7 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `void SetTraceLogLevel(int logType)`
 - [ ] `void SetTraceLogExit(int logType)`
 - [ ] `void SetTraceLogCallback(TraceLogCallback callback)`
-- [ ] `void TraceLog(int logType, const char *text, ...)`
+- [x] `void TraceLog(int logType, const char *text, ...)`
 - [ ] `void *MemAlloc(int size)`
 - [ ] `void MemFree(void *ptr)`
 - [ ] `void TakeScreenshot(const char *fileName)`
@@ -166,9 +171,9 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `void OpenURL(const char *url)`
 - [x] `bool IsKeyPressed(int key)`
 - [x] `bool IsKeyDown(int key)`
-- [ ] `bool IsKeyReleased(int key)`
-- [ ] `bool IsKeyUp(int key)`
-- [ ] `void SetExitKey(int key)`
+- [x] `bool IsKeyReleased(int key)`
+- [x] `bool IsKeyUp(int key)`
+- [x] `void SetExitKey(int key)`
 - [x] `int GetKeyPressed(void)`
 - [x] `int GetCharPressed(void)`
 - [ ] `bool IsGamepadAvailable(int gamepad)`
@@ -182,15 +187,15 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `int GetGamepadAxisCount(int gamepad)`
 - [ ] `float GetGamepadAxisMovement(int gamepad, int axis)`
 - [x] `bool IsMouseButtonPressed(int button)`
-- [ ] `bool IsMouseButtonDown(int button)`
+- [x] `bool IsMouseButtonDown(int button)`
 - [x] `bool IsMouseButtonReleased(int button)`
-- [ ] `bool IsMouseButtonUp(int button)`
+- [x] `bool IsMouseButtonUp(int button)`
 - [x] `int GetMouseX(void)`
 - [x] `int GetMouseY(void)`
 - [x] `Vector2 GetMousePosition(void)`
-- [ ] `void SetMousePosition(int x, int y)`
-- [ ] `void SetMouseOffset(int offsetX, int offsetY)`
-- [ ] `void SetMouseScale(float scaleX, float scaleY)`
+- [x] `void SetMousePosition(int x, int y)`
+- [x] `void SetMouseOffset(int offsetX, int offsetY)`
+- [x] `void SetMouseScale(float scaleX, float scaleY)`
 - [x] `float GetMouseWheelMove(void)`
 - [ ] `int GetMouseCursor(void)`
 - [ ] `void SetMouseCursor(int cursor)`
@@ -212,54 +217,54 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `void SetCameraAltControl(int keyAlt)`
 - [ ] `void SetCameraSmoothZoomControl(int keySmoothZoom)`
 - [ ] `void SetCameraMoveControls(int keyFront, int keyBack, int keyRight, int keyLeft, int keyUp, int keyDown)`
-- [ ] `void DrawPixel(int posX, int posY, Color color)`
-- [ ] `void DrawPixelV(Vector2 position, Color color)`
+- [x] `void DrawPixel(int posX, int posY, Color color)`
+- [x] `void DrawPixelV(Vector2 position, Color color)`
 - [x] `void DrawLine(int startPosX, int startPosY, int endPosX, int endPosY, Color color)`
-- [ ] `void DrawLineV(Vector2 startPos, Vector2 endPos, Color color)`
-- [ ] `void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color)`
+- [x] `void DrawLineV(Vector2 startPos, Vector2 endPos, Color color)`
+- [x] `void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color)`
 - [x] `void DrawLineBezier(Vector2 startPos, Vector2 endPos, float thick, Color color)`
-- [ ] `void DrawLineStrip(Vector2 *points, int pointsCount, Color color)`
+- [x] `void DrawLineStrip(Vector2 *points, int pointsCount, Color color)`
 - [x] `void DrawCircle(int centerX, int centerY, float radius, Color color)`
-- [ ] `void DrawCircleSector(Vector2 center, float radius, int startAngle, int endAngle, int segments, Color color)`
-- [ ] `void DrawCircleSectorLines(Vector2 center, float radius, int startAngle, int endAngle, int segments, Color color)`
+- [x] `void DrawCircleSector(Vector2 center, float radius, int startAngle, int endAngle, int segments, Color color)`
+- [x] `void DrawCircleSectorLines(Vector2 center, float radius, int startAngle, int endAngle, int segments, Color color)`
 - [x] `void DrawCircleGradient(int centerX, int centerY, float radius, Color color1, Color color2)`
 - [x] `void DrawCircleV(Vector2 center, float radius, Color color)`
 - [x] `void DrawCircleLines(int centerX, int centerY, float radius, Color color)`
-- [ ] `void DrawEllipse(int centerX, int centerY, float radiusH, float radiusV, Color color)`
-- [ ] `void DrawEllipseLines(int centerX, int centerY, float radiusH, float radiusV, Color color)`
-- [ ] `void DrawRing(Vector2 center, float innerRadius, float outerRadius, int startAngle, int endAngle, int segments, Color color)`
-- [ ] `void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, int startAngle, int endAngle, int segments, Color color)`
+- [x] `void DrawEllipse(int centerX, int centerY, float radiusH, float radiusV, Color color)`
+- [x] `void DrawEllipseLines(int centerX, int centerY, float radiusH, float radiusV, Color color)`
+- [x] `void DrawRing(Vector2 center, float innerRadius, float outerRadius, int startAngle, int endAngle, int segments, Color color)`
+- [x] `void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, int startAngle, int endAngle, int segments, Color color)`
 - [x] `void DrawRectangle(int posX, int posY, int width, int height, Color color)`
-- [ ] `void DrawRectangleV(Vector2 position, Vector2 size, Color color)`
-- [ ] `void DrawRectangleRec(Rectangle rec, Color color)`
-- [ ] `void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color)`
-- [ ] `void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2)`
+- [x] `void DrawRectangleV(Vector2 position, Vector2 size, Color color)`
+- [x] `void DrawRectangleRec(Rectangle rec, Color color)`
+- [x] `void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color)`
+- [x] `void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2)`
 - [x] `void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2)`
-- [ ] `void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4)`
+- [x] `void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4)`
 - [x] `void DrawRectangleLines(int posX, int posY, int width, int height, Color color)`
 - [x] `void DrawRectangleLinesEx(Rectangle rec, int lineThick, Color color)`
-- [ ] `void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color color)`
-- [ ] `void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, int lineThick, Color color)`
+- [x] `void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color color)`
+- [x] `void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, int lineThick, Color color)`
 - [x] `void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color)`
 - [x] `void DrawTriangleLines(Vector2 v1, Vector2 v2, Vector2 v3, Color color)`
-- [ ] `void DrawTriangleFan(Vector2 *points, int pointsCount, Color color)`
-- [ ] `void DrawTriangleStrip(Vector2 *points, int pointsCount, Color color)`
+- [x] `void DrawTriangleFan(Vector2 *points, int pointsCount, Color color)`
+- [x] `void DrawTriangleStrip(Vector2 *points, int pointsCount, Color color)`
 - [x] `void DrawPoly(Vector2 center, int sides, float radius, float rotation, Color color)`
-- [ ] `void DrawPolyLines(Vector2 center, int sides, float radius, float rotation, Color color)`
+- [x] `void DrawPolyLines(Vector2 center, int sides, float radius, float rotation, Color color)`
 - [x] `bool CheckCollisionRecs(Rectangle rec1, Rectangle rec2)`
-- [ ] `bool CheckCollisionCircles(Vector2 center1, float radius1, Vector2 center2, float radius2)`
-- [ ] `bool CheckCollisionCircleRec(Vector2 center, float radius, Rectangle rec)`
+- [x] `bool CheckCollisionCircles(Vector2 center1, float radius1, Vector2 center2, float radius2)`
+- [x] `bool CheckCollisionCircleRec(Vector2 center, float radius, Rectangle rec)`
 - [x] `bool CheckCollisionPointRec(Vector2 point, Rectangle rec)`
 - [x] `bool CheckCollisionPointCircle(Vector2 point, Vector2 center, float radius)`
-- [ ] `bool CheckCollisionPointTriangle(Vector2 point, Vector2 p1, Vector2 p2, Vector2 p3)`
-- [ ] `bool CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2, Vector2 *collisionPoint)`
+- [x] `bool CheckCollisionPointTriangle(Vector2 point, Vector2 p1, Vector2 p2, Vector2 p3)`
+- [x] `bool CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2, Vector2 *collisionPoint)`
 - [x] `Rectangle GetCollisionRec(Rectangle rec1, Rectangle rec2)`
 - [x] `Image LoadImage(const char *fileName)`
 - [ ] `Image LoadImageRaw(const char *fileName, int width, int height, int format, int headerSize)`
 - [ ] `Image LoadImageAnim(const char *fileName, int *frames)`
 - [ ] `Image LoadImageFromMemory(const char *fileType, const unsigned char *fileData, int dataSize)`
 - [x] `void UnloadImage(Image image)`
-- [ ] `bool ExportImage(Image image, const char *fileName)`
+- [x] `bool ExportImage(Image image, const char *fileName)`
 - [ ] `bool ExportImageAsCode(Image image, const char *fileName)`
 - [ ] `Image GenImageColor(int width, int height, Color color)`
 - [x] `Image GenImageGradientV(int width, int height, Color top, Color bottom)`
@@ -273,7 +278,7 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `Image ImageFromImage(Image image, Rectangle rec)`
 - [ ] `Image ImageText(const char *text, int fontSize, Color color)`
 - [ ] `Image ImageTextEx(Font font, const char *text, float fontSize, float spacing, Color tint)`
-- [ ] `void ImageFormat(Image *image, int newFormat)`
+- [x] `void ImageFormat(Image *image, int newFormat)`
 - [ ] `void ImageToPOT(Image *image, Color fill)`
 - [x] `void ImageCrop(Image *image, Rectangle crop)`
 - [ ] `void ImageAlphaCrop(Image *image, float threshold)`
@@ -285,17 +290,17 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `void ImageResizeCanvas(Image *image, int newWidth, int newHeight, int offsetX, int offsetY, Color fill)`
 - [ ] `void ImageMipmaps(Image *image)`
 - [ ] `void ImageDither(Image *image, int rBpp, int gBpp, int bBpp, int aBpp)`
-- [ ] `void ImageFlipVertical(Image *image)`
+- [x] `void ImageFlipVertical(Image *image)`
 - [x] `void ImageFlipHorizontal(Image *image)`
 - [ ] `void ImageRotateCW(Image *image)`
 - [ ] `void ImageRotateCCW(Image *image)`
-- [ ] `void ImageColorTint(Image *image, Color color)`
-- [ ] `void ImageColorInvert(Image *image)`
-- [ ] `void ImageColorGrayscale(Image *image)`
-- [ ] `void ImageColorContrast(Image *image, float contrast)`
-- [ ] `void ImageColorBrightness(Image *image, int brightness)`
+- [x] `void ImageColorTint(Image *image, Color color)`
+- [x] `void ImageColorInvert(Image *image)`
+- [x] `void ImageColorGrayscale(Image *image)`
+- [x] `void ImageColorContrast(Image *image, float contrast)`
+- [x] `void ImageColorBrightness(Image *image, int brightness)`
 - [ ] `void ImageColorReplace(Image *image, Color color, Color replace)`
-- [ ] `Color *LoadImageColors(Image image)`
+- [x] `Color *LoadImageColors(Image image)`
 - [ ] `Color *LoadImagePalette(Image image, int maxPaletteSize, int *colorsCount)`
 - [ ] `void UnloadImageColors(Color *colors)`
 - [ ] `void UnloadImagePalette(Color *colors)`
@@ -317,39 +322,39 @@ Below you'll find the list of things to be developed in this project.
 - [x] `Texture2D LoadTexture(const char *fileName)`
 - [x] `Texture2D LoadTextureFromImage(Image image)`
 - [ ] `TextureCubemap LoadTextureCubemap(Image image, int layoutType)`
-- [ ] `RenderTexture2D LoadRenderTexture(int width, int height)`
+- [x] `RenderTexture2D LoadRenderTexture(int width, int height)`
 - [x] `void UnloadTexture(Texture2D texture)`
-- [ ] `void UnloadRenderTexture(RenderTexture2D target)`
+- [x] `void UnloadRenderTexture(RenderTexture2D target)`
 - [ ] `void UpdateTexture(Texture2D texture, const void *pixels)`
 - [ ] `void UpdateTextureRec(Texture2D texture, Rectangle rec, const void *pixels)`
-- [ ] `Image GetTextureData(Texture2D texture)`
+- [x] `Image GetTextureData(Texture2D texture)`
 - [ ] `Image GetScreenData(void)`
 - [ ] `void GenTextureMipmaps(Texture2D *texture)`
 - [x] `void SetTextureFilter(Texture2D texture, int filterMode)`
 - [ ] `void SetTextureWrap(Texture2D texture, int wrapMode)`
 - [x] `void DrawTexture(Texture2D texture, int posX, int posY, Color tint)`
-- [ ] `void DrawTextureV(Texture2D texture, Vector2 position, Color tint)`
+- [x] `void DrawTextureV(Texture2D texture, Vector2 position, Color tint)`
 - [x] `void DrawTextureEx(Texture2D texture, Vector2 position, float rotation, float scale, Color tint)`
-- [ ] `void DrawTextureRec(Texture2D texture, Rectangle source, Vector2 position, Color tint)`
+- [x] `void DrawTextureRec(Texture2D texture, Rectangle source, Vector2 position, Color tint)`
 - [ ] `void DrawTextureQuad(Texture2D texture, Vector2 tiling, Vector2 offset, Rectangle quad, Color tint)`
 - [x] `void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint)`
 - [x] `void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint)`
 - [ ] `void DrawTextureNPatch(Texture2D texture, NPatchInfo nPatchInfo, Rectangle dest, Vector2 origin, float rotation, Color tint)`
 - [x] `Color Fade(Color color, float alpha)`
-- [ ] `int ColorToInt(Color color)`
-- [ ] `Vector4 ColorNormalize(Color color)`
-- [ ] `Color ColorFromNormalized(Vector4 normalized)`
-- [ ] `Vector3 ColorToHSV(Color color)`
-- [ ] `Color ColorFromHSV(float hue, float saturation, float value)`
+- [x] `int ColorToInt(Color color)`
+- [x] `Vector4 ColorNormalize(Color color)`
+- [x] `Color ColorFromNormalized(Vector4 normalized)`
+- [x] `Vector3 ColorToHSV(Color color)`
+- [x] `Color ColorFromHSV(float hue, float saturation, float value)`
 - [x] `Color ColorAlpha(Color color, float alpha)`
-- [ ] `Color ColorAlphaBlend(Color dst, Color src, Color tint)`
+- [x] `Color ColorAlphaBlend(Color dst, Color src, Color tint)`
 - [x] `Color GetColor(int hexValue)`
 - [ ] `Color GetPixelColor(void *srcPtr, int format)`
 - [ ] `void SetPixelColor(void *dstPtr, Color color, int format)`
 - [ ] `int GetPixelDataSize(int width, int height, int format)`
 - [ ] `Font GetFontDefault(void)`
 - [ ] `Font LoadFont(const char *fileName)`
-- [ ] `Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int charsCount)`
+- [x] `Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int charsCount)`
 - [ ] `Font LoadFontFromImage(Image image, Color key, int firstChar)`
 - [ ] `Font LoadFontFromMemory(const char *fileType, const unsigned char *fileData, int dataSize, int fontSize, int *fontChars, int charsCount)`
 - [ ] `CharInfo *LoadFontData(const unsigned char *fileData, int dataSize, int fontSize, int *fontChars, int charsCount, int type)`
@@ -357,12 +362,11 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `void UnloadFontData(CharInfo *chars, int charsCount)`
 - [x] `void UnloadFont(Font font)`
 - [x] `void DrawFPS(int posX, int posY)`
-- [ ] `void DrawText(const char *text, int posX, int posY, int fontSize, Color color)`
-- [ ] `void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint)`
-- [ ] `void DrawTextRec(Font font, const char *text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint)`
-- [ ] `void DrawTextRecEx(Font font, const char *text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint,`
-- [ ] `int selectStart, int selectLength, Color selectTint, Color selectBackTint)`
-- [ ] `void DrawTextCodepoint(Font font, int codepoint, Vector2 position, float fontSize, Color tint)`
+- [x] `void DrawText(const char *text, int posX, int posY, int fontSize, Color color)`
+- [x] `void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint)`
+- [x] `void DrawTextRec(Font font, const char *text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint)`
+- [x] `void DrawTextRecEx(Font font, const char *text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint, int selectStart, int selectLength, Color selectTint, Color selectBackTint)`
+- [x] `void DrawTextCodepoint(Font font, int codepoint, Vector2 position, float fontSize, Color tint)`
 - [x] `int MeasureText(const char *text, int fontSize)`
 - [ ] `Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing)`
 - [ ] `int GetGlyphIndex(Font font, int codepoint)`
@@ -392,22 +396,22 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `void DrawTriangle3D(Vector3 v1, Vector3 v2, Vector3 v3, Color color)`
 - [ ] `void DrawTriangleStrip3D(Vector3 *points, int pointsCount, Color color)`
 - [x] `void DrawCube(Vector3 position, float width, float height, float length, Color color)`
-- [ ] `void DrawCubeV(Vector3 position, Vector3 size, Color color)`
+- [x] `void DrawCubeV(Vector3 position, Vector3 size, Color color)`
 - [x] `void DrawCubeWires(Vector3 position, float width, float height, float length, Color color)`
 - [ ] `void DrawCubeWiresV(Vector3 position, Vector3 size, Color color)`
 - [ ] `void DrawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color)`
-- [ ] `void DrawSphere(Vector3 centerPos, float radius, Color color)`
+- [x] `void DrawSphere(Vector3 centerPos, float radius, Color color)`
 - [ ] `void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color color)`
-- [ ] `void DrawSphereWires(Vector3 centerPos, float radius, int rings, int slices, Color color)`
+- [x] `void DrawSphereWires(Vector3 centerPos, float radius, int rings, int slices, Color color)`
 - [ ] `void DrawCylinder(Vector3 position, float radiusTop, float radiusBottom, float height, int slices, Color color)`
 - [ ] `void DrawCylinderWires(Vector3 position, float radiusTop, float radiusBottom, float height, int slices, Color color)`
 - [x] `void DrawPlane(Vector3 centerPos, Vector2 size, Color color)`
 - [x] `void DrawRay(Ray ray, Color color)`
 - [x] `void DrawGrid(int slices, float spacing)`
 - [ ] `void DrawGizmo(Vector3 position)`
-- [ ] `Model LoadModel(const char *fileName)`
+- [x] `Model LoadModel(const char *fileName)`
 - [ ] `Model LoadModelFromMesh(Mesh mesh)`
-- [ ] `void UnloadModel(Model model)`
+- [x] `void UnloadModel(Model model)`
 - [ ] `void UnloadModelKeepMeshes(Model model)`
 - [ ] `Mesh *LoadMeshes(const char *fileName, int *meshCount)`
 - [ ] `void UnloadMesh(Mesh mesh)`
@@ -415,11 +419,11 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `Material *LoadMaterials(const char *fileName, int *materialCount)`
 - [ ] `Material LoadMaterialDefault(void)`
 - [ ] `void UnloadMaterial(Material material)`
-- [ ] `void SetMaterialTexture(Material *material, int mapType, Texture2D texture)`
+- [x] `void SetMaterialTexture(Material *material, int mapType, Texture2D texture)`
 - [ ] `void SetModelMeshMaterial(Model *model, int meshId, int materialId)`
-- [ ] `ModelAnimation *LoadModelAnimations(const char *fileName, int *animsCount)`
-- [ ] `void UpdateModelAnimation(Model model, ModelAnimation anim, int frame)`
-- [ ] `void UnloadModelAnimation(ModelAnimation anim)`
+- [x] `ModelAnimation *LoadModelAnimations(const char *fileName, int *animsCount)`
+- [x] `void UpdateModelAnimation(Model model, ModelAnimation anim, int frame)`
+- [x] `void UnloadModelAnimation(ModelAnimation anim)`
 - [ ] `bool IsModelAnimationValid(Model model, ModelAnimation anim)`
 - [ ] `Mesh GenMeshPoly(int sides, float radius)`
 - [ ] `Mesh GenMeshPlane(float width, float length, int resX, int resZ)`
@@ -436,15 +440,15 @@ Below you'll find the list of things to be developed in this project.
 - [ ] `void MeshBinormals(Mesh *mesh)`
 - [ ] `void MeshNormalsSmooth(Mesh *mesh)`
 - [ ] `void DrawModel(Model model, Vector3 position, float scale, Color tint)`
-- [ ] `void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint)`
+- [x] `void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint)`
 - [ ] `void DrawModelWires(Model model, Vector3 position, float scale, Color tint)`
 - [ ] `void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint)`
 - [ ] `void DrawBoundingBox(BoundingBox box, Color color)`
-- [ ] `void DrawBillboard(Camera camera, Texture2D texture, Vector3 center, float size, Color tint)`
+- [x] `void DrawBillboard(Camera camera, Texture2D texture, Vector3 center, float size, Color tint)`
 - [ ] `void DrawBillboardRec(Camera camera, Texture2D texture, Rectangle source, Vector3 center, float size, Color tint)`
 - [ ] `bool CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, float radius2)`
-- [ ] `bool CheckCollisionBoxes(BoundingBox box1, BoundingBox box2)`
-- [ ] `bool CheckCollisionBoxSphere(BoundingBox box, Vector3 center, float radius)`
+- [x] `bool CheckCollisionBoxes(BoundingBox box1, BoundingBox box2)`
+- [x] `bool CheckCollisionBoxSphere(BoundingBox box, Vector3 center, float radius)`
 - [ ] `bool CheckCollisionRaySphere(Ray ray, Vector3 center, float radius)`
 - [ ] `bool CheckCollisionRaySphereEx(Ray ray, Vector3 center, float radius, Vector3 *collisionPoint)`
 - [x] `bool CheckCollisionRayBox(Ray ray, BoundingBox box)`
@@ -669,9 +673,9 @@ Below you'll find the list of things to be developed in this project.
 - [x] [core/core_window_flags.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/core/core_window_flags.php)
 - [ ] core/core_window_letterbox.php
 - [x] [core/core_world_screen.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/core/core_world_screen.php)
-- [ ] models/models_animation.php
-- [ ] models/models_billboard.php
-- [ ] models/models_box_collisions.php
+- [x] [models/models_animation.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/models/models_animation.php)
+- [x] [models/models_billboard.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/models/models_billboard.php)
+- [x] [models/models_box_collisions.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/models/models_box_collisions.php)
 - [ ] models/models_cubicmap.php
 - [ ] models/models_first_person_maze.php
 - [ ] models/models_geometric_shapes.php
@@ -716,7 +720,7 @@ Below you'll find the list of things to be developed in this project.
 - [ ] shapes/shapes_draw_circle_sector.php
 - [ ] shapes/shapes_draw_rectangle_rounded.php
 - [ ] shapes/shapes_draw_ring.php
-- [ ] shapes/shapes_easings_ball_anim.php
+- [x] [shapes/shapes_easings_ball_anim.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/shapes/shapes/shapes_easings_ball_anim.php)
 - [x] [shapes/shapes_easings_box_anim.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/shapes/shapes_easings_box_anim.php)
 - [x] [shapes/shapes_easings_rectangle_array.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/shapes/shapes_easings_rectangle_array.php)
 - [x] [shapes/shapes_following_eyes.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/shapes/shapes_following_eyes.php)
@@ -739,12 +743,12 @@ Below you'll find the list of things to be developed in this project.
 - [x] [textures/textures_bunnymark.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_bunnymark.php)
 - [x] [textures/textures_draw_tiled.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_draw_tiled.php)
 - [x] [textures/textures_image_drawing.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_image_drawing.php)
-- [x] [textures/textures_image_loading.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_image_loading.php)
 - [x] [textures/textures_image_generation.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_image_generation.php)
-- [ ] textures/textures_image_processing.php
-- [ ] textures/textures_image_text.php
-- [ ] textures/textures_logo_raylib.php
-- [ ] textures/textures_mouse_painting.php
+- [x] [textures/textures_mouse_painting.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_mouse_painting.php)
+- [x] [textures/textures_image_text.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_image_text.php)
+- [x] [textures/textures_image_loading.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_image_loading.php)
+- [x] [textures/textures_logo_raylib.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_logo_raylib.php)
+- [x] [textures/textures_image_processing.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_image_processing.php)
 - [ ] textures/textures_npatch_drawing.php
 - [x] [textures/textures_particles_blending.php](https://github.com/nawarian/raylib-ffi/blob/main/examples/textures/textures_particles_blending.php)
 - [ ] textures/textures_poly.php

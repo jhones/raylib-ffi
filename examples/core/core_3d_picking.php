@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Nawarian\Raylib\{
-    Raylib,
-    RaylibFactory,
-};
+use Nawarian\Raylib\Raylib;
 use Nawarian\Raylib\Types\{
     BoundingBox,
     Camera3D,
@@ -16,15 +13,37 @@ use Nawarian\Raylib\Types\{
     Vector3,
 };
 
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    BeginMode3D,
+    CheckCollisionRayBox,
+    ClearBackground,
+    CloseWindow,
+    DrawCube,
+    DrawCubeWires,
+    DrawFPS,
+    DrawGrid,
+    DrawRay,
+    DrawText,
+    EndDrawing,
+    EndMode3D,
+    GetMousePosition,
+    GetMouseRay,
+    InitWindow,
+    IsMouseButtonPressed,
+    MeasureText,
+    SetCameraMode,
+    SetTargetFPS,
+    UpdateCamera,
+    WindowShouldClose
+};
 
 // Initialization
 //--------------------------------------------------------------------------------------
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, "raylib [core] example - 3d picking");
+InitWindow($screenWidth, $screenHeight, "raylib [core] example - 3d picking");
 
 // Define the camera to look into our 3d world
 $camera = new Camera3D(
@@ -45,37 +64,34 @@ $ray = new Ray(
 
 $collision = false;
 
-$raylib->setCameraMode($camera, Camera3D::MODE_FREE); // Set a free camera mode
+SetCameraMode($camera, Camera3D::MODE_FREE); // Set a free camera mode
 
-$raylib->setTargetFPS(60);                   // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {       // Detect window close button or ESC key
+while (!WindowShouldClose()) {       // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
-    $raylib->UpdateCamera($camera);          // Update camera
+    UpdateCamera($camera);          // Update camera
 
-    if ($raylib->isMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON)) {
+    if (IsMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON)) {
         if (!$collision) {
-            $ray = $raylib->getMouseRay($raylib->getMousePosition(), $camera);
+            $ray = GetMouseRay(GetMousePosition(), $camera);
 
             // Check collision between ray and box
-            $collision = $raylib->checkCollisionRayBox(
-                $ray,
-                new BoundingBox(
-                    new Vector3(
-                        $cubePosition->x - $cubeSize->x / 2,
-                        $cubePosition->y - $cubeSize->y / 2,
-                        $cubePosition->z - $cubeSize->z / 2,
-                    ),
-                    new Vector3(
-                        $cubePosition->x + $cubeSize->x / 2,
-                        $cubePosition->y + $cubeSize->y / 2,
-                        $cubePosition->z + $cubeSize->z / 2,
-                    ),
+            $collision = CheckCollisionRayBox($ray, new BoundingBox(
+                new Vector3(
+                    $cubePosition->x - $cubeSize->x / 2,
+                    $cubePosition->y - $cubeSize->y / 2,
+                    $cubePosition->z - $cubeSize->z / 2,
                 ),
-            );
+                new Vector3(
+                    $cubePosition->x + $cubeSize->x / 2,
+                    $cubePosition->y + $cubeSize->y / 2,
+                    $cubePosition->z + $cubeSize->z / 2,
+                ),
+            ));
         } else {
             $collision = false;
         }
@@ -85,50 +101,50 @@ while (!$raylib->windowShouldClose()) {       // Detect window close button or E
     // Draw
     //----------------------------------------------------------------------------------
     // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-    $raylib->beginDrawing();
-        $raylib->clearBackground(Color::rayWhite());
+    BeginDrawing();
+        ClearBackground(Color::rayWhite());
 
-        $raylib->beginMode3D($camera);
+        BeginMode3D($camera);
             if ($collision) {
-                $raylib->drawCube($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::red());
-                $raylib->drawCubeWires($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::maroon());
+                DrawCube($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::red());
+                DrawCubeWires($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::maroon());
 
-                $raylib->drawCubeWires(
+                DrawCubeWires(
                     $cubePosition,
                     $cubeSize->x + 0.2,
                     $cubeSize->y + 0.2,
                     $cubeSize->z + 0.2,
-                    Color::green(),
+                    Color::green()
                 );
             } else {
-                $raylib->drawCube($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::gray());
-                $raylib->drawCubeWires($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::darkGray());
+                DrawCube($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::gray());
+                DrawCubeWires($cubePosition, $cubeSize->x, $cubeSize->y, $cubeSize->z, Color::darkGray());
             }
 
-            $raylib->drawRay($ray, Color::maroon());
-            $raylib->drawGrid(10, 1.0);
-        $raylib->endMode3D();
+            DrawRay($ray, Color::maroon());
+            DrawGrid(10, 1.0);
+        EndMode3D();
 
-        $raylib->drawText("Try selecting the box with mouse!", 240, 10, 20, Color::darkGray());
+        DrawText("Try selecting the box with mouse!", 240, 10, 20, Color::darkGray());
 
         if ($collision) {
-            $raylib->drawText(
+            DrawText(
                 "BOX SELECTED",
-                (int) (($screenWidth - $raylib->measureText("BOX SELECTED", 30)) / 2),
+                (int) (($screenWidth - MeasureText("BOX SELECTED", 30)) / 2),
                 (int) ($screenHeight * 0.1),
                 30,
-                Color::green(),
+                Color::green()
             );
         }
 
-        $raylib->drawFPS(10, 10);
+        DrawFPS(10, 10);
 
-    $raylib->endDrawing();
+    EndDrawing();
     // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();        // Close window and OpenGL context
+CloseWindow();        // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

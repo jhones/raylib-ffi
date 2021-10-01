@@ -4,18 +4,34 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Nawarian\Raylib\{
-    Raylib,
-    RaylibFactory,
-};
+use Nawarian\Raylib\Raylib;
 use Nawarian\Raylib\Types\{
     Camera3D,
     Color,
     Vector3,
 };
 
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    BeginMode3D,
+    ClearBackground,
+    CloseWindow,
+    DrawCube,
+    DrawCubeWires,
+    DrawGrid,
+    DrawRectangle,
+    DrawRectangleLines,
+    DrawText,
+    EndDrawing,
+    EndMode3D,
+    Fade,
+    InitWindow,
+    IsKeyDown,
+    SetCameraMode,
+    SetTargetFPS,
+    UpdateCamera,
+    WindowShouldClose
+};
 
 const MAX_COLUMNS = 20;
 
@@ -24,7 +40,7 @@ const MAX_COLUMNS = 20;
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, "raylib [core] example - 3d camera free");
+InitWindow($screenWidth, $screenHeight, "raylib [core] example - 3d camera free");
 
 // Define the camera to look into our 3d world
 $camera = new Camera3D(
@@ -37,52 +53,52 @@ $camera = new Camera3D(
 
 $cubePosition = new Vector3(0, 0, 0);
 
-$raylib->setCameraMode($camera, Camera3D::MODE_FREE); // Set a free camera mode
+SetCameraMode($camera, Camera3D::MODE_FREE); // Set a free camera mode
 
-$raylib->setTargetFPS(60);                   // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {       // Detect window close button or ESC key
+while (!WindowShouldClose()) {       // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
-    $raylib->updateCamera($camera);          // Update camera
+    UpdateCamera($camera);          // Update camera
 
-    if ($raylib->isKeyDown(Raylib::KEY_Z)) {
+    if (IsKeyDown(Raylib::KEY_Z)) {
         $camera->target = new Vector3(0, 0, 0);
     }
     //----------------------------------------------------------------------------------
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
+    BeginDrawing();
 
-        $raylib->clearBackground(Color::rayWhite());
+        ClearBackground(Color::rayWhite());
 
-        $raylib->beginMode3D($camera);
+        BeginMode3D($camera);
 
-            $raylib->drawCube($cubePosition, 2.0, 2.0, 2.0, Color::red());
-            $raylib->drawCubeWires($cubePosition, 2.0, 2.0, 2.0, Color::maroon());
+            DrawCube($cubePosition, 2.0, 2.0, 2.0, Color::red());
+            DrawCubeWires($cubePosition, 2.0, 2.0, 2.0, Color::maroon());
 
-            $raylib->drawGrid(10, 1.0);
+            DrawGrid(10, 1.0);
 
-        $raylib->endMode3D();
+        EndMode3D();
 
-        $raylib->drawRectangle(10, 10, 320, 133, $raylib->fade(Color::skyBlue(), 0.5));
-        $raylib->drawRectangleLines(10, 10, 320, 133, Color::blue());
+        DrawRectangle(10, 10, 320, 133, Fade(Color::skyBlue(), 0.5));
+        DrawRectangleLines(10, 10, 320, 133, Color::blue());
 
-        $raylib->drawText("Free camera default controls:", 20, 20, 10, Color::black());
-        $raylib->drawText("- Mouse Wheel to Zoom in-out", 40, 40, 10, Color::darkGray());
-        $raylib->drawText("- Mouse Wheel Pressed to Pan", 40, 60, 10, Color::darkGray());
-        $raylib->drawText("- Alt + Mouse Wheel Pressed to Rotate", 40, 80, 10, Color::darkGray());
-        $raylib->drawText("- Alt + Ctrl + Mouse Wheel Pressed for Smooth Zoom", 40, 100, 10, Color::darkGray());
-        $raylib->drawText("- Z to zoom to (0, 0, 0)", 40, 120, 10, Color::darkGray());
+        DrawText("Free camera default controls:", 20, 20, 10, Color::black());
+        DrawText("- Mouse Wheel to Zoom in-out", 40, 40, 10, Color::darkGray());
+        DrawText("- Mouse Wheel Pressed to Pan", 40, 60, 10, Color::darkGray());
+        DrawText("- Alt + Mouse Wheel Pressed to Rotate", 40, 80, 10, Color::darkGray());
+        DrawText("- Alt + Ctrl + Mouse Wheel Pressed for Smooth Zoom", 40, 100, 10, Color::darkGray());
+        DrawText("- Z to zoom to (0, 0, 0)", 40, 120, 10, Color::darkGray());
 
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();        // Close window and OpenGL context
+CloseWindow();        // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

@@ -2,39 +2,51 @@
 
 declare(strict_types=1);
 
-use Nawarian\Raylib\RaylibFactory;
 use Nawarian\Raylib\Types\{Color, Vector2};
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    CheckCollisionPointCircle,
+    ClearBackground,
+    CloseWindow,
+    DrawCircleV,
+    DrawFPS,
+    EndDrawing,
+    GetMousePosition,
+    GetScreenHeight,
+    GetScreenWidth,
+    InitWindow,
+    SetTargetFPS,
+    WindowShouldClose
+};
 
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 // Initialization
 //--------------------------------------------------------------------------------------
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, "raylib [shapes] example - following eyes");
+InitWindow($screenWidth, $screenHeight, "raylib [shapes] example - following eyes");
 
-$scleraLeftPosition = new Vector2($raylib->getScreenWidth() / 2 - 100, $raylib->getScreenHeight() / 2);
-$scleraRightPosition = new Vector2($raylib->getScreenWidth() / 2 + 100, $raylib->getScreenHeight() / 2);
+$scleraLeftPosition = new Vector2(GetScreenWidth() / 2 - 100, GetScreenHeight() / 2);
+$scleraRightPosition = new Vector2(GetScreenWidth() / 2 + 100, GetScreenHeight() / 2);
 $scleraRadius = 80;
 
 $irisRadius = 24;
 
-$raylib->setTargetFPS(60);               // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC key
+while (!WindowShouldClose()) {   // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
-    $irisLeftPosition = $raylib->getMousePosition();
-    $irisRightPosition = $raylib->getMousePosition();
+    $irisLeftPosition = GetMousePosition();
+    $irisRightPosition = GetMousePosition();
 
     // Check not inside the left eye sclera
-    if (!$raylib->checkCollisionPointCircle($irisLeftPosition, $scleraLeftPosition, $scleraRadius - 20)) {
+    if (!CheckCollisionPointCircle($irisLeftPosition, $scleraLeftPosition, $scleraRadius - 20)) {
         $dx = $irisLeftPosition->x - $scleraLeftPosition->x;
         $dy = $irisLeftPosition->y - $scleraLeftPosition->y;
 
@@ -48,7 +60,7 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
     }
 
     // Check not inside the right eye sclera
-    if (!$raylib->checkCollisionPointCircle($irisRightPosition, $scleraRightPosition, $scleraRadius - 20)) {
+    if (!CheckCollisionPointCircle($irisRightPosition, $scleraRightPosition, $scleraRadius - 20)) {
         $dx = $irisRightPosition->x - $scleraRightPosition->x;
         $dy = $irisRightPosition->y - $scleraRightPosition->y;
 
@@ -64,24 +76,24 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
-        $raylib->clearBackground(Color::rayWhite());
+    BeginDrawing();
+        ClearBackground(Color::rayWhite());
 
-        $raylib->drawCircleV($scleraLeftPosition, $scleraRadius, Color::lightGray());
-        $raylib->drawCircleV($irisLeftPosition, $irisRadius, Color::brown());
-        $raylib->drawCircleV($irisLeftPosition, 10, Color::black());
+        DrawCircleV($scleraLeftPosition, $scleraRadius, Color::lightGray());
+        DrawCircleV($irisLeftPosition, $irisRadius, Color::brown());
+        DrawCircleV($irisLeftPosition, 10, Color::black());
 
-        $raylib->drawCircleV($scleraRightPosition, $scleraRadius, Color::lightGray());
-        $raylib->drawCircleV($irisRightPosition, $irisRadius, Color::darkGreen());
-        $raylib->drawCircleV($irisRightPosition, 10, Color::black());
+        DrawCircleV($scleraRightPosition, $scleraRadius, Color::lightGray());
+        DrawCircleV($irisRightPosition, $irisRadius, Color::darkGreen());
+        DrawCircleV($irisRightPosition, 10, Color::black());
 
-        $raylib->drawFPS(10, 10);
+        DrawFPS(10, 10);
 
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();        // Close window and OpenGL context
+CloseWindow();        // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

@@ -3,35 +3,47 @@
 declare(strict_types=1);
 
 use Nawarian\Raylib\Raylib;
-use Nawarian\Raylib\RaylibFactory;
 use Nawarian\Raylib\Types\{Color, Rectangle, Vector2};
+
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    ClearBackground,
+    CloseWindow,
+    DrawRectanglePro,
+    DrawText,
+    EndDrawing,
+    Fade,
+    GetScreenHeight,
+    GetScreenWidth,
+    InitWindow,
+    IsKeyPressed,
+    SetTargetFPS,
+    WindowShouldClose
+};
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/easings.php';
-
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
 
 // Initialization
 //--------------------------------------------------------------------------------------
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, 'raylib [shapes] example - easings box anim');
+InitWindow($screenWidth, $screenHeight, 'raylib [shapes] example - easings box anim');
 
 // Box variables to be animated with easings
-$rec = new Rectangle($raylib->getScreenWidth() / 2, -100, 100, 100);
+$rec = new Rectangle(GetScreenWidth() / 2, -100, 100, 100);
 $rotation = 0.0;
 $alpha = 1.0;
 
 $state = 0;
 $framesCounter = 0;
 
-$raylib->setTargetFPS(60);               // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC key
+while (!WindowShouldClose()) {   // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
     switch ($state) {
@@ -40,7 +52,7 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
 
             // NOTE: Remember that 3rd parameter of easing function refers to
             // desired value variation, do not confuse it with expected final value!
-            $rec->y = easeElasticOut($framesCounter, -100, $raylib->getScreenHeight() / 2 + 100, 120);
+            $rec->y = easeElasticOut($framesCounter, -100, GetScreenHeight() / 2 + 100, 120);
 
             if ($framesCounter >= 120) {
                 $framesCounter = 0;
@@ -50,7 +62,7 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
         case 1:     // Scale box to an horizontal bar
             $framesCounter++;
             $rec->height = easeBounceOut($framesCounter, 100, -90, 120);
-            $rec->width = easeBounceOut($framesCounter, 100, $raylib->getScreenWidth(), 120);
+            $rec->width = easeBounceOut($framesCounter, 100, GetScreenWidth(), 120);
 
             if ($framesCounter >= 120) {
                 $framesCounter = 0;
@@ -68,7 +80,7 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
             break;
         case 3:     // Increase bar size to fill all screen
             $framesCounter++;
-            $rec->height = easeCircOut($framesCounter, 10, $raylib->getScreenWidth(), 120);
+            $rec->height = easeCircOut($framesCounter, 10, GetScreenWidth(), 120);
 
             if ($framesCounter >= 120) {
                 $framesCounter = 0;
@@ -87,8 +99,8 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
     }
 
     // Reset animation at any moment
-    if ($raylib->isKeyPressed(Raylib::KEY_SPACE)) {
-        $rec = new Rectangle($raylib->getScreenWidth() / 2, -100, 100, 100);
+    if (IsKeyPressed(Raylib::KEY_SPACE)) {
+        $rec = new Rectangle(GetScreenWidth() / 2, -100, 100, 100);
         $rotation = 0.0;
         $alpha = 1.0;
         $state = 0;
@@ -98,30 +110,19 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
+    BeginDrawing();
 
-        $raylib->clearBackground(Color::rayWhite());
+        ClearBackground(Color::rayWhite());
 
-        $raylib->drawRectanglePro(
-            $rec,
-            new Vector2($rec->width / 2, $rec->height / 2),
-            $rotation,
-            $raylib->fade(Color::black(), $alpha),
-        );
+        DrawRectanglePro($rec, new Vector2($rec->width / 2, $rec->height / 2), $rotation, Fade(Color::black(), $alpha));
 
-        $raylib->drawText(
-            'PRESS [SPACE] TO RESET BOX ANIMATION!',
-            10,
-            $raylib->getScreenHeight() - 25,
-            20,
-            Color::lightGray(),
-        );
+        DrawText('PRESS [SPACE] TO RESET BOX ANIMATION!', 10, GetScreenHeight() - 25, 20, Color::lightGray());
 
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();        // Close window and OpenGL context
+CloseWindow();        // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

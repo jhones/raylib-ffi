@@ -3,15 +3,38 @@
 declare(strict_types=1);
 
 use Nawarian\Raylib\Raylib;
-use Nawarian\Raylib\RaylibFactory;
-use Nawarian\Raylib\Types\Color;
-use Nawarian\Raylib\Types\Rectangle;
-use Nawarian\Raylib\Types\Vector2;
+use Nawarian\Raylib\Types\{Color, Rectangle, Vector2};
+
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    CheckCollisionPointRec,
+    ClearBackground,
+    CloseWindow,
+    ColorAlpha,
+    DrawRectangle,
+    DrawRectangleLinesEx,
+    DrawRectangleRec,
+    DrawText,
+    DrawTexture,
+    DrawTextureTiled,
+    EndDrawing,
+    GetFPS,
+    GetMousePosition,
+    GetScreenHeight,
+    GetScreenWidth,
+    InitWindow,
+    IsKeyPressed,
+    IsMouseButtonPressed,
+    LoadTexture,
+    SetConfigFlags,
+    SetTargetFPS,
+    SetTextureFilter,
+    TextFormat,
+    UnloadTexture,
+    WindowShouldClose
+};
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
 
 const OPT_WIDTH = 220;
 const MARGIN_SIZE = 8;
@@ -22,12 +45,12 @@ const COLOR_SIZE = 16;
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->setConfigFlags(Raylib::FLAG_WINDOW_RESIZABLE); // Make the window resizable
-$raylib->initWindow($screenWidth, $screenHeight, 'raylib [textures] example - Draw part of a texture tiled');
+SetConfigFlags(Raylib::FLAG_WINDOW_RESIZABLE); // Make the window resizable
+InitWindow($screenWidth, $screenHeight, 'raylib [textures] example - Draw part of a texture tiled');
 
 // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
-$texPattern = $raylib->loadTexture(__DIR__ . '/resources/patterns.png');
-$raylib->setTextureFilter($texPattern, Raylib::FILTER_TRILINEAR); // Makes the texture smoother when upscaled
+$texPattern = LoadTexture(__DIR__ . '/resources/patterns.png');
+SetTextureFilter($texPattern, Raylib::FILTER_TRILINEAR); // Makes the texture smoother when upscaled
 
 // Coordinates for all patterns inside the texture
 $recPattern = [
@@ -78,32 +101,29 @@ $activeCol = 0;
 $scale = 1.0;
 $rotation = 0.0;
 
-$raylib->setTargetFPS(60);
+SetTargetFPS(60);
 //---------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {  // Detect window close button or ESC key
+while (!WindowShouldClose()) {  // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
-    $screenWidth = $raylib->getScreenWidth();
-    $screenHeight = $raylib->getScreenHeight();
+    $screenWidth = GetScreenWidth();
+    $screenHeight = GetScreenHeight();
 
     // Handle mouse
-    if ($raylib->isMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON)) {
-        $mouse = $raylib->getMousePosition();
+    if (IsMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON)) {
+        $mouse = GetMousePosition();
 
         // Check which pattern was clicked and set it as the active pattern
         for ($i = 0; $i < count($recPattern); $i++) {
             if (
-                $raylib->checkCollisionPointRec(
-                    $mouse,
-                    new Rectangle(
-                        2 + MARGIN_SIZE + $recPattern[$i]->x,
-                        40 + MARGIN_SIZE + $recPattern[$i]->y,
-                        $recPattern[$i]->width,
-                        $recPattern[$i]->height,
-                    )
-                )
+                CheckCollisionPointRec($mouse, new Rectangle(
+                    2 + MARGIN_SIZE + $recPattern[$i]->x,
+                    40 + MARGIN_SIZE + $recPattern[$i]->y,
+                    $recPattern[$i]->width,
+                    $recPattern[$i]->height,
+                ))
             ) {
                 $activePattern = $i;
                 break;
@@ -112,7 +132,7 @@ while (!$raylib->windowShouldClose()) {  // Detect window close button or ESC ke
 
         // Check to see which color was clicked and set it as the active color
         for ($i = 0; $i < count($colorRec); ++$i) {
-            if ($raylib->checkCollisionPointRec($mouse, $colorRec[$i])) {
+            if (CheckCollisionPointRec($mouse, $colorRec[$i])) {
                 $activeCol = $i;
                 break;
             }
@@ -122,11 +142,11 @@ while (!$raylib->windowShouldClose()) {  // Detect window close button or ESC ke
     // Handle keys
 
     // Change scale
-    if ($raylib->isKeyPressed(Raylib::KEY_UP)) {
+    if (IsKeyPressed(Raylib::KEY_UP)) {
         $scale += 0.25;
     }
 
-    if ($raylib->isKeyPressed(Raylib::KEY_DOWN)) {
+    if (IsKeyPressed(Raylib::KEY_DOWN)) {
         $scale -= 0.25;
     }
 
@@ -137,16 +157,16 @@ while (!$raylib->windowShouldClose()) {  // Detect window close button or ESC ke
     }
 
     // Change rotation
-    if ($raylib->isKeyPressed(Raylib::KEY_LEFT)) {
+    if (IsKeyPressed(Raylib::KEY_LEFT)) {
         $rotation -= 25.0;
     }
 
-    if ($raylib->isKeyPressed(Raylib::KEY_RIGHT)) {
+    if (IsKeyPressed(Raylib::KEY_RIGHT)) {
         $rotation += 25.0;
     }
 
     // Reset
-    if ($raylib->isKeyPressed(Raylib::KEY_SPACE)) {
+    if (IsKeyPressed(Raylib::KEY_SPACE)) {
         $rotation = 0.0;
         $scale = 1.0;
     }
@@ -154,108 +174,64 @@ while (!$raylib->windowShouldClose()) {  // Detect window close button or ESC ke
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
-        $raylib->clearBackground(Color::rayWhite());
+    BeginDrawing();
+        ClearBackground(Color::rayWhite());
         // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 
         // Draw the tiled area
-        $raylib->drawTextureTiled(
-            $texPattern,
-            $recPattern[$activePattern],
-            new Rectangle(
-                OPT_WIDTH + MARGIN_SIZE,
-                MARGIN_SIZE,
-                $screenWidth - OPT_WIDTH - 2 * MARGIN_SIZE,
-                $screenHeight - 2 * MARGIN_SIZE,
-            ),
-            new Vector2(0, 0),
-            $rotation,
-            $scale,
-            $colors[$activeCol],
-        );
+        DrawTextureTiled($texPattern, $recPattern[$activePattern], new Rectangle(
+            OPT_WIDTH + MARGIN_SIZE,
+            MARGIN_SIZE,
+            $screenWidth - OPT_WIDTH - 2 * MARGIN_SIZE,
+            $screenHeight - 2 * MARGIN_SIZE,
+        ), new Vector2(0, 0), $rotation, $scale, $colors[$activeCol]);
 
         // Draw options
-        $raylib->drawRectangle(
+        DrawRectangle(
             MARGIN_SIZE,
             MARGIN_SIZE,
             OPT_WIDTH - MARGIN_SIZE,
             $screenHeight - 2 * MARGIN_SIZE,
-            $raylib->colorAlpha(Color::lightGray(), 0.5)
+            ColorAlpha(Color::lightGray(), 0.5)
         );
 
-        $raylib->drawText('Select Pattern', 2 + MARGIN_SIZE, 30 + MARGIN_SIZE, 10, Color::black());
-        $raylib->drawTexture($texPattern, 2 + MARGIN_SIZE, 40 + MARGIN_SIZE, Color::black());
-        $raylib->drawRectangle(
+        DrawText('Select Pattern', 2 + MARGIN_SIZE, 30 + MARGIN_SIZE, 10, Color::black());
+        DrawTexture($texPattern, 2 + MARGIN_SIZE, 40 + MARGIN_SIZE, Color::black());
+        DrawRectangle(
             2 + MARGIN_SIZE + $recPattern[$activePattern]->x,
             40 + MARGIN_SIZE + $recPattern[$activePattern]->y,
             $recPattern[$activePattern]->width,
             $recPattern[$activePattern]->height,
-            $raylib->colorAlpha(Color::darkBlue(), 0.3),
+            ColorAlpha(Color::darkBlue(), 0.3)
         );
 
-        $raylib->drawText('Select Color', 2 + MARGIN_SIZE, 10 + 256 + MARGIN_SIZE, 10, Color::black());
+        DrawText('Select Color', 2 + MARGIN_SIZE, 10 + 256 + MARGIN_SIZE, 10, Color::black());
         for ($i = 0; $i < count($colors); $i++) {
-            $raylib->drawRectangleRec($colorRec[$i], $colors[$i]);
+            DrawRectangleRec($colorRec[$i], $colors[$i]);
             if ($activeCol === $i) {
-                $raylib->drawRectangleLinesEx($colorRec[$i], 3, $raylib->colorAlpha(Color::white(), 0.5));
+                DrawRectangleLinesEx($colorRec[$i], 3, ColorAlpha(Color::white(), 0.5));
             }
         }
 
-        $raylib->drawText(
-            'Scale (UP/DOWN to change)',
-            2 + MARGIN_SIZE,
-            80 + 256 + MARGIN_SIZE,
-            10,
-            Color::black(),
-        );
-        $raylib->drawText(
-            $raylib->textFormat('%.2fx', $scale),
-            2 + MARGIN_SIZE,
-            92 + 256 + MARGIN_SIZE,
-            20,
-            Color::black(),
-        );
+        DrawText('Scale (UP/DOWN to change)', 2 + MARGIN_SIZE, 80 + 256 + MARGIN_SIZE, 10, Color::black());
+        DrawText(TextFormat('%.2fx', $scale), 2 + MARGIN_SIZE, 92 + 256 + MARGIN_SIZE, 20, Color::black());
 
-        $raylib->drawText(
-            'Rotation (LEFT/RIGHT to change)',
-            2 + MARGIN_SIZE,
-            122 + 256 + MARGIN_SIZE,
-            10,
-            Color::black(),
-        );
-        $raylib->drawText(
-            $raylib->textFormat('%.0f degrees', $rotation),
-            2 + MARGIN_SIZE,
-            134 + 256 + MARGIN_SIZE,
-            20,
-            Color::black(),
-        );
+        DrawText('Rotation (LEFT/RIGHT to change)', 2 + MARGIN_SIZE, 122 + 256 + MARGIN_SIZE, 10, Color::black());
+        DrawText(TextFormat('%.0f degrees', $rotation), 2 + MARGIN_SIZE, 134 + 256 + MARGIN_SIZE, 20, Color::black());
 
-        $raylib->drawText(
-            'Press [SPACE] to reset',
-            2 + MARGIN_SIZE,
-            164 + 256 + MARGIN_SIZE,
-            10,
-            Color::darkBlue(),
-        );
+        DrawText('Press [SPACE] to reset', 2 + MARGIN_SIZE, 164 + 256 + MARGIN_SIZE, 10, Color::darkBlue());
 
         // Draw FPS
-        $raylib->drawText(
-            $raylib->textFormat('%d FPS', $raylib->getFPS()),
-            2 + MARGIN_SIZE,
-            2 + MARGIN_SIZE,
-            20,
-            Color::black(),
-        );
+        DrawText(TextFormat('%d FPS', GetFPS()), 2 + MARGIN_SIZE, 2 + MARGIN_SIZE, 20, Color::black());
 
     // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->unloadTexture($texPattern);        // Unload texture
+UnloadTexture($texPattern);        // Unload texture
 
-$raylib->closeWindow();              // Close window and OpenGL context
+CloseWindow();              // Close window and OpenGL context
 //--------------------------------------------------------------------------------------

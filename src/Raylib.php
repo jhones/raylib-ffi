@@ -6,13 +6,18 @@ namespace Nawarian\Raylib;
 
 use FFI;
 use FFI\CDATA;
+use Psalm\Type;
 
 final class Raylib implements
     HasRaylibBlendModeConstants,
     HasRaylibFilterModeConstants,
     HasRaylibGestureConstants,
+    HasRaylibImageProcessConstants,
     HasRaylibKeysConstants,
+    HasRaylibMaterialMapTypeConstants,
     HasRaylibMouseConstants,
+    HasRaylibPixelFormatConstants,
+    HasRaylibTraceLogConstants,
     HasRaylibWindowFlagConstants
 {
     private RaylibFFIProxy $ffi;
@@ -47,6 +52,28 @@ final class Raylib implements
         $this->ffi->BeginScissorMode($x, $y, $width, $height);
     }
 
+    public function beginTextureMode(Types\RenderTexture2D $target): void
+    {
+        $this->ffi->BeginTextureMode($target->toCData($this->ffi));
+    }
+
+    public function checkCollisionBoxes(Types\BoundingBox $box1, Types\BoundingBox $box2): bool
+    {
+        return $this->ffi->CheckCollisionBoxes(
+            $box1->toCData($this->ffi),
+            $box2->toCData($this->ffi),
+        );
+    }
+
+    public function checkCollisionBoxSphere(Types\BoundingBox $box, Types\Vector3 $center, float $radius): bool
+    {
+        return $this->ffi->CheckCollisionBoxSphere(
+            $box->toCData($this->ffi),
+            $center->toCData($this->ffi),
+            $radius,
+        );
+    }
+
     public function checkCollisionPointCircle(Types\Vector2 $point, Types\Vector2 $center, float $radius): bool
     {
         return $this->ffi->CheckCollisionPointCircle(
@@ -69,6 +96,74 @@ final class Raylib implements
     public function checkCollisionRecs(Types\Rectangle $rec1, Types\Rectangle $rec2): bool
     {
         return $this->ffi->CheckCollisionRecs($rec1->toCData($this->ffi), $rec2->toCData($this->ffi));
+    }
+
+    public function checkCollisionCircles(
+        Types\Vector2 $center1,
+        float $radius1,
+        Types\Vector2 $center2,
+        float $radius2
+    ): bool {
+        return $this->ffi->CheckCollisionCircles(
+            $center1->toCData($this->ffi),
+            $radius1,
+            $center2->toCData($this->ffi),
+            $radius2,
+        );
+    }
+
+    public function checkCollisionCircleRec(Types\Vector2 $center, float $radius, Types\Rectangle $rec): bool
+    {
+        return $this->ffi->CheckCollisionCircleRec(
+            $center->toCData($this->ffi),
+            $radius,
+            $rec->toCData($this->ffi),
+        );
+    }
+
+    public function checkCollisionPointTriangle(
+        Types\Vector2 $point,
+        Types\Vector2 $p1,
+        Types\Vector2 $p2,
+        Types\Vector2 $p3,
+    ): bool {
+        return $this->ffi->CheckCollisionPointTriangle(
+            $point->toCData($this->ffi),
+            $p1->toCData($this->ffi),
+            $p2->toCData($this->ffi),
+            $p3->toCData($this->ffi),
+        );
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     */
+    public function checkCollisionLines(
+        Types\Vector2 $startPos1,
+        Types\Vector2 $endPos1,
+        Types\Vector2 $startPos2,
+        Types\Vector2 $endPos2,
+        Types\Vector2 $mutCollisionPoint,
+    ): bool {
+        $vec = $this->ffi->new('Vector2');
+        $vecPointer = FFI::addr($vec);
+
+        $collides = $this->ffi->CheckCollisionLines(
+            $startPos1->toCData($this->ffi),
+            $endPos1->toCData($this->ffi),
+            $startPos2->toCData($this->ffi),
+            $endPos2->toCData($this->ffi),
+            $vecPointer,
+        );
+
+        if ($collides) {
+            $mutCollisionPoint->x = $vec->x;
+            $mutCollisionPoint->y = $vec->y;
+        }
+
+        return $collides;
     }
 
     public function clearBackground(Types\Color $color): void
@@ -102,6 +197,41 @@ final class Raylib implements
         return new Types\Color($c->r, $c->g, $c->b, $c->a);
     }
 
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function colorAlphaBlend(Types\Color $dst, Types\Color $src, Types\Color $tint): Types\Color
+    {
+        $color = $this->ffi->ColorAlphaBlend(
+            $dst->toCData($this->ffi),
+            $src->toCData($this->ffi),
+            $tint->toCData($this->ffi),
+        );
+
+        return new Types\Color(
+            $color->r,
+            $color->g,
+            $color->b,
+            $color->a,
+        );
+    }
+
+    public function drawBillboard(
+        Types\Camera3D $camera,
+        Types\Texture2D $texture,
+        Types\Vector3 $center,
+        float $size,
+        Types\Color $tint
+    ): void {
+        $this->ffi->DrawBillboard(
+            $camera->toCData($this->ffi),
+            $texture->toCData($this->ffi),
+            $center->toCData($this->ffi),
+            $size,
+            $tint->toCData($this->ffi),
+        );
+    }
+
     public function drawCircle(int $centerX, int $centerY, float $radius, Types\Color $color): void
     {
         $this->ffi->DrawCircle($centerX, $centerY, $radius, $color->toCData($this->ffi));
@@ -128,6 +258,42 @@ final class Raylib implements
         $this->ffi->DrawCircleLines($centerX, $centerY, $radius, $color->toCData($this->ffi));
     }
 
+    public function drawCircleSector(
+        Types\Vector2 $center,
+        float $radius,
+        int $startAngle,
+        int $endAngle,
+        int $segments,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawCircleSector(
+            $center->toCData($this->ffi),
+            $radius,
+            $startAngle,
+            $endAngle,
+            $segments,
+            $color->toCData($this->ffi)
+        );
+    }
+
+    public function drawCircleSectorLines(
+        Types\Vector2 $center,
+        float $radius,
+        int $startAngle,
+        int $endAngle,
+        int $segments,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawCircleSectorLines(
+            $center->toCData($this->ffi),
+            $radius,
+            $startAngle,
+            $endAngle,
+            $segments,
+            $color->toCData($this->ffi)
+        );
+    }
+
     public function drawCircleV(Types\Vector2 $center, float $radius, Types\Color $color): void
     {
         $this->ffi->DrawCircleV($center->toCData($this->ffi), $radius, $color->toCData($this->ffi));
@@ -141,6 +307,15 @@ final class Raylib implements
         Types\Color $color
     ): void {
         $this->ffi->DrawCube($position->toCData($this->ffi), $width, $height, $length, $color->toCData($this->ffi));
+    }
+
+    public function drawCubeV(Types\Vector3 $position, Types\Vector3 $size, Types\Color $color): void
+    {
+        $this->ffi->DrawCubeV(
+            $position->toCData($this->ffi),
+            $size->toCData($this->ffi),
+            $color->toCData($this->ffi),
+        );
     }
 
     public function drawCubeWires(
@@ -159,6 +334,21 @@ final class Raylib implements
         );
     }
 
+    public function drawEllipse(int $centerX, int $centerY, float $radiusH, float $radiusV, Types\Color $color): void
+    {
+        $this->ffi->DrawEllipse($centerX, $centerY, $radiusH, $radiusV, $color->toCData($this->ffi));
+    }
+
+    public function drawEllipseLines(
+        int $centerX,
+        int $centerY,
+        float $radiusH,
+        float $radiusV,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawEllipseLines($centerX, $centerY, $radiusH, $radiusV, $color->toCData($this->ffi));
+    }
+
     public function drawFPS(int $posX, int $posY): void
     {
         $this->ffi->DrawFPS($posX, $posY);
@@ -174,6 +364,49 @@ final class Raylib implements
         $this->ffi->DrawLine($x0, $y0, $x1, $y1, $color->toCData($this->ffi));
     }
 
+    /**
+     * @param array<Types\Vector2> $points
+     * @param Types\Color $color
+     */
+    public function drawLineStrip(array $points, Types\Color $color): void
+    {
+        $pointsCount = count($points);
+        if ($pointsCount === 0) {
+            return;
+        }
+
+        $cdataPointsArray = $this->ffi->new(FFI::arrayType($this->ffi->type('Vector2'), [$pointsCount]));
+
+        foreach ($points as $i => $vector2) {
+            $cdataPointsArray[$i] = $vector2->toCData($this->ffi);
+        }
+
+        $this->ffi->DrawLineStrip(
+            $cdataPointsArray,
+            $pointsCount,
+            $color->toCData($this->ffi),
+        );
+    }
+
+    public function drawLineV(Types\Vector2 $startPos, Types\Vector2 $endPos, Types\Color $color): void
+    {
+        $this->ffi->DrawLineV(
+            $startPos->toCData($this->ffi),
+            $endPos->toCData($this->ffi),
+            $color->toCData($this->ffi)
+        );
+    }
+
+    public function drawLineEx(Types\Vector2 $startPos, Types\Vector2 $endPos, float $thick, Types\Color $color): void
+    {
+        $this->ffi->DrawLineEx(
+            $startPos->toCData($this->ffi),
+            $endPos->toCData($this->ffi),
+            $thick,
+            $color->toCData($this->ffi)
+        );
+    }
+
     public function drawLineBezier(
         Types\Vector2 $startPos,
         Types\Vector2 $endPos,
@@ -186,6 +419,34 @@ final class Raylib implements
             $thick,
             $color->toCData($this->ffi),
         );
+    }
+
+    public function drawModelEx(
+        Types\Model $model,
+        Types\Vector3 $position,
+        Types\Vector3 $rotationAxis,
+        float $rotationAngle,
+        Types\Vector3 $scale,
+        Types\Color $tint
+    ): void {
+        $this->ffi->DrawModelEx(
+            $model->toCData($this->ffi),
+            $position->toCData($this->ffi),
+            $rotationAxis->toCData($this->ffi),
+            $rotationAngle,
+            $scale->toCData($this->ffi),
+            $tint->toCData($this->ffi),
+        );
+    }
+
+    public function drawPixel(int $posX, int $posY, Types\Color $color): void
+    {
+        $this->ffi->DrawPixel($posX, $posY, $color->toCData($this->ffi));
+    }
+
+    public function drawPixelV(Types\Vector2 $position, Types\Color $color): void
+    {
+        $this->ffi->DrawPixelV($position->toCData($this->ffi), $color->toCData($this->ffi));
     }
 
     public function drawPlane(Types\Vector3 $center, Types\Vector2 $size, Types\Color $color): void
@@ -207,6 +468,22 @@ final class Raylib implements
         $this->ffi->DrawPoly($center->toCData($this->ffi), $sides, $radius, $rotation, $color->toCData($this->ffi));
     }
 
+    public function drawPolyLines(
+        Types\Vector2 $center,
+        int $sides,
+        float $radius,
+        float $rotation,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawPolyLines(
+            $center->toCData($this->ffi),
+            $sides,
+            $radius,
+            $rotation,
+            $color->toCData($this->ffi),
+        );
+    }
+
     public function drawRay(Types\Ray $ray, Types\Color $color): void
     {
         $this->ffi->DrawRay($ray->toCData($this->ffi), $color->toCData($this->ffi));
@@ -215,6 +492,33 @@ final class Raylib implements
     public function drawRectangle(float $x, float $y, float $width, float $height, Types\Color $color): void
     {
         $this->ffi->DrawRectangle($x, $y, $width, $height, $color->toCData($this->ffi));
+    }
+
+    public function drawRectangleV(Types\Vector2 $position, Types\Vector2 $size, Types\Color $color): void
+    {
+        $this->ffi->DrawRectangleV(
+            $position->toCData($this->ffi),
+            $size->toCData($this->ffi),
+            $color->toCData($this->ffi)
+        );
+    }
+
+    public function drawRectangleGradientV(
+        int $posX,
+        int $posY,
+        int $width,
+        int $height,
+        Types\Color $color1,
+        Types\Color $color2,
+    ): void {
+        $this->ffi->DrawRectangleGradientV(
+            $posX,
+            $posY,
+            $width,
+            $height,
+            $color1->toCData($this->ffi),
+            $color2->toCData($this->ffi)
+        );
     }
 
     public function drawRectangleGradientH(
@@ -235,6 +539,22 @@ final class Raylib implements
         );
     }
 
+    public function drawRectangleGradientEx(
+        Types\Rectangle $rec,
+        Types\Color $col1,
+        Types\Color $col2,
+        Types\Color $col3,
+        Types\Color $col4
+    ): void {
+        $this->ffi->DrawRectangleGradientEx(
+            $rec->toCData($this->ffi),
+            $col1->toCData($this->ffi),
+            $col2->toCData($this->ffi),
+            $col3->toCData($this->ffi),
+            $col4->toCData($this->ffi),
+        );
+    }
+
     public function drawRectangleLines(float $x, float $y, float $width, float $height, Types\Color $color): void
     {
         $this->ffi->DrawRectangleLines($x, $y, $width, $height, $color->toCData($this->ffi));
@@ -243,6 +563,36 @@ final class Raylib implements
     public function drawRectangleLinesEx(Types\Rectangle $rectangle, int $lineThick, Types\Color $color): void
     {
         $this->ffi->DrawRectangleLinesEx($rectangle->toCData($this->ffi), $lineThick, $color->toCData($this->ffi));
+    }
+
+    public function drawRectangleRounded(
+        Types\Rectangle $rec,
+        float $roundness,
+        int $segments,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawRectangleRounded(
+            $rec->toCData($this->ffi),
+            $roundness,
+            $segments,
+            $color->toCData($this->ffi),
+        );
+    }
+
+    public function drawRectangleRoundedLines(
+        Types\Rectangle $rec,
+        float $roundness,
+        int $segments,
+        int $lineThick,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawRectangleRoundedLines(
+            $rec->toCData($this->ffi),
+            $roundness,
+            $segments,
+            $lineThick,
+            $color->toCData($this->ffi),
+        );
     }
 
     public function drawRectanglePro(
@@ -264,9 +614,156 @@ final class Raylib implements
         $this->ffi->DrawRectangleRec($rec->toCData($this->ffi), $color->toCData($this->ffi));
     }
 
+    public function drawRing(
+        Types\Vector2 $center,
+        float $innerRadius,
+        float $outerRadius,
+        int $startAngle,
+        int $endAngle,
+        int $segments,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawRing(
+            $center->toCData($this->ffi),
+            $innerRadius,
+            $outerRadius,
+            $startAngle,
+            $endAngle,
+            $segments,
+            $color->toCData($this->ffi)
+        );
+    }
+
+    public function drawRingLines(
+        Types\Vector2 $center,
+        float $innerRadius,
+        float $outerRadius,
+        int $startAngle,
+        int $endAngle,
+        int $segments,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawRingLines(
+            $center->toCData($this->ffi),
+            $innerRadius,
+            $outerRadius,
+            $startAngle,
+            $endAngle,
+            $segments,
+            $color->toCData($this->ffi)
+        );
+    }
+
+    public function drawSphere(Types\Vector3 $centerPos, float $radius, Types\Color $color): void
+    {
+        $this->ffi->DrawSphere(
+            $centerPos->toCData($this->ffi),
+            $radius,
+            $color->toCData($this->ffi),
+        );
+    }
+
+    public function drawSphereWires(
+        Types\Vector3 $centerPos,
+        float $radius,
+        int $rings,
+        int $slices,
+        Types\Color $color
+    ): void {
+        $this->ffi->DrawSphereWires(
+            $centerPos->toCData($this->ffi),
+            $radius,
+            $rings,
+            $slices,
+            $color->toCData($this->ffi),
+        );
+    }
+
     public function drawText(string $text, int $x, int $y, int $fontSize, Types\Color $color): void
     {
         $this->ffi->DrawText($text, $x, $y, $fontSize, $color->toCData($this->ffi));
+    }
+
+    public function drawTextEx(
+        Types\Font $font,
+        string $text,
+        Types\Vector2 $position,
+        float $fontSize,
+        float $spacing,
+        Types\Color $tint
+    ): void {
+        $this->ffi->DrawTextEx(
+            $font->toCData($this->ffi),
+            $text,
+            $position->toCData($this->ffi),
+            $fontSize,
+            $spacing,
+            $tint->toCData($this->ffi)
+        );
+    }
+
+    public function drawTextRec(
+        Types\Font $font,
+        string $text,
+        Types\Rectangle $rec,
+        float $fontSize,
+        float $spacing,
+        bool $wordWrap,
+        Types\Color $tint
+    ): void {
+        $this->ffi->DrawTextRec(
+            $font->toCData($this->ffi),
+            $text,
+            $rec->toCData($this->ffi),
+            $fontSize,
+            $spacing,
+            $wordWrap,
+            $tint->toCData($this->ffi),
+        );
+    }
+
+    public function drawTextRecEx(
+        Types\Font $font,
+        string $text,
+        Types\Rectangle $rec,
+        float $fontSize,
+        float $spacing,
+        bool $wordWrap,
+        Types\Color $tint,
+        int $selectStart,
+        int $selectLength,
+        Types\Color $selectTint,
+        Types\Color $selectBackTint
+    ): void {
+        $this->ffi->DrawTextRecEx(
+            $font->toCData($this->ffi),
+            $text,
+            $rec->toCData($this->ffi),
+            $fontSize,
+            $spacing,
+            $wordWrap,
+            $tint->toCData($this->ffi),
+            $selectStart,
+            $selectLength,
+            $selectTint->toCData($this->ffi),
+            $selectBackTint->toCData($this->ffi),
+        );
+    }
+
+    public function drawTextCodepoint(
+        Types\Font $font,
+        int $codepoint,
+        Types\Vector2 $position,
+        float $fontSize,
+        Types\Color $tint
+    ): void {
+        $this->ffi->DrawTextCodepoint(
+            $font->toCData($this->ffi),
+            $codepoint,
+            $position->toCData($this->ffi),
+            $fontSize,
+            $tint->toCData($this->ffi),
+        );
     }
 
     public function drawTexture(Types\Texture2D $texture, int $posX, int $posY, Types\Color $tint): void
@@ -287,6 +784,20 @@ final class Raylib implements
             $rotation,
             $scale,
             $tint->toCData($this->ffi),
+        );
+    }
+
+    public function drawTextureRec(
+        Types\Texture2D $texture,
+        Types\Rectangle $source,
+        Types\Vector2 $position,
+        Types\Color $tint
+    ): void {
+        $this->ffi->DrawTextureRec(
+            $texture->toCData($this->ffi),
+            $source->toCData($this->ffi),
+            $position->toCData($this->ffi),
+            $tint->toCData($this->ffi)
         );
     }
 
@@ -328,6 +839,18 @@ final class Raylib implements
         );
     }
 
+    public function drawTextureV(
+        Types\Texture2D $texture,
+        Types\Vector2 $position,
+        Types\Color $tint
+    ): void {
+        $this->ffi->DrawTextureV(
+            $texture->toCData($this->ffi),
+            $position->toCData($this->ffi),
+            $tint->toCData($this->ffi)
+        );
+    }
+
     public function drawTriangle(Types\Vector2 $v1, Types\Vector2 $v2, Types\Vector2 $v3, Types\Color $color): void
     {
         $this->ffi->DrawTriangle(
@@ -344,6 +867,54 @@ final class Raylib implements
             $v1->toCData($this->ffi),
             $v2->toCData($this->ffi),
             $v3->toCData($this->ffi),
+            $color->toCData($this->ffi),
+        );
+    }
+
+    /**
+     * @param array<Types\Vector2> $points
+     * @param Types\Color $color
+     */
+    public function drawTriangleFan(array $points, Types\Color $color): void
+    {
+        $pointsCount = count($points);
+        if ($pointsCount === 0) {
+            return;
+        }
+
+        $cdataPointsArray = $this->ffi->new(FFI::arrayType($this->ffi->type('Vector2'), [$pointsCount]));
+
+        foreach ($points as $i => $vector2) {
+            $cdataPointsArray[$i] = $vector2->toCData($this->ffi);
+        }
+
+        $this->ffi->DrawTriangleFan(
+            $cdataPointsArray,
+            $pointsCount,
+            $color->toCData($this->ffi),
+        );
+    }
+
+    /**
+     * @param array<Types\Vector2> $points
+     * @param Types\Color $color
+     */
+    public function drawTriangleStrip(array $points, Types\Color $color): void
+    {
+        $pointsCount = count($points);
+        if ($pointsCount === 0) {
+            return;
+        }
+
+        $cdataPointsArray = $this->ffi->new(FFI::arrayType($this->ffi->type('Vector2'), [$pointsCount]));
+
+        foreach ($points as $i => $vector2) {
+            $cdataPointsArray[$i] = $vector2->toCData($this->ffi);
+        }
+
+        $this->ffi->DrawTriangleStrip(
+            $cdataPointsArray,
+            $pointsCount,
             $color->toCData($this->ffi),
         );
     }
@@ -373,6 +944,16 @@ final class Raylib implements
         $this->ffi->EndScissorMode();
     }
 
+    public function endTextureMode(): void
+    {
+        $this->ffi->EndTextureMode();
+    }
+
+    public function exportImage(Types\Image $image, string $fileName): bool
+    {
+        return $this->ffi->ExportImage($image->toCData($this->ffi), $fileName);
+    }
+
     /**
      * @psalm-suppress UndefinedPropertyFetch
      * @psalm-suppress MixedArgument
@@ -382,6 +963,70 @@ final class Raylib implements
         $colorStruct = $this->ffi->Fade($color->toCData($this->ffi), $alpha);
 
         return new Types\Color($colorStruct->r, $colorStruct->g, $colorStruct->b, $colorStruct->a);
+    }
+
+    public function colorToInt(Types\Color $color): int
+    {
+        return $this->ffi->ColorToInt($color->toCData($this->ffi));
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function colorNormalize(Types\Color $color): Types\Vector4
+    {
+        $vec4 = $this->ffi->ColorNormalize($color->toCData($this->ffi));
+
+        return new Types\Vector4(
+            $vec4->x,
+            $vec4->y,
+            $vec4->z,
+            $vec4->w,
+        );
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function colorFromNormalized(Types\Vector4 $normalized): Types\Color
+    {
+        $color = $this->ffi->ColorFromNormalized($normalized->toCData($this->ffi));
+
+        return new Types\Color(
+            $color->r,
+            $color->g,
+            $color->b,
+            $color->a,
+        );
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function colorToHSV(Types\Color $color): Types\Vector3
+    {
+        $vec3 = $this->ffi->ColorToHSV($color->toCData($this->ffi));
+
+        return new Types\Vector3(
+            $vec3->x,
+            $vec3->y,
+            $vec3->z,
+        );
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function colorFromHSV(float $hue, float $saturation, float $value): Types\Color
+    {
+        $color = $this->ffi->ColorFromHSV($hue, $saturation, $value);
+
+        return new Types\Color(
+            $color->r,
+            $color->g,
+            $color->b,
+            $color->a,
+        );
     }
 
     /**
@@ -560,6 +1205,11 @@ final class Raylib implements
         );
     }
 
+    public function getClipboardText(): string
+    {
+        return $this->ffi->GetClipboardText();
+    }
+
     /**
      * @psalm-suppress UndefinedPropertyFetch
      * @psalm-suppress MixedArgument
@@ -582,6 +1232,30 @@ final class Raylib implements
         return new Types\Rectangle($rec->x, $rec->y, $rec->width, $rec->height);
     }
 
+    public function getCameraMatrix(Types\Camera3D $camera): Types\Matrix
+    {
+        $matrixCData = $this->ffi->GetCameraMatrix($camera->toCData($this->ffi));
+        $matrix = new Types\Matrix(...array_fill(0, 16, 0.0));
+
+        for ($i = 0; $i < 15; ++$i) {
+            $matrix->{"m{$i}"} = $matrixCData->{"m{$i}"};
+        }
+
+        return $matrix;
+    }
+
+    public function getCameraMatrix2D(Types\Camera2D $camera): Types\Matrix
+    {
+        $matrixCData = $this->ffi->GetCameraMatrix2D($camera->toCData($this->ffi));
+        $matrix = new Types\Matrix(...array_fill(0, 16, 0.0));
+
+        for ($i = 0; $i < 15; ++$i) {
+            $matrix->{"m{$i}"} = $matrixCData->{"m{$i}"};
+        }
+
+        return $matrix;
+    }
+
     public function getFPS(): int
     {
         return $this->ffi->GetFPS();
@@ -590,6 +1264,14 @@ final class Raylib implements
     public function getFrameTime(): float
     {
         return $this->ffi->GetFrameTime();
+    }
+
+    /**
+     * @deprecated Please, use method loadImageColors()
+     */
+    public function getImageData(Types\Image $image): CData
+    {
+        return $this->loadImageColors($image);
     }
 
     public function getGestureDetected(): int
@@ -664,6 +1346,77 @@ final class Raylib implements
         return $this->ffi->GetRandomValue($min, $max);
     }
 
+    public function getMonitorCount(): int
+    {
+        return $this->ffi->GetMonitorCount();
+    }
+
+    public function getMonitorName(int $monitor): string
+    {
+        return $this->ffi->GetMonitorName($monitor);
+    }
+
+    /**
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedPropertyFetch
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function getMonitorPosition(int $monitor): Types\Vector2
+    {
+        $vec = $this->ffi->GetMonitorPosition($monitor);
+
+        return new Types\Vector2($vec->x, $vec->y);
+    }
+
+    public function getMonitorWidth(int $monitor): int
+    {
+        return $this->ffi->GetMonitorWidth($monitor);
+    }
+
+    public function getMonitorHeight(int $monitor): int
+    {
+        return $this->ffi->GetMonitorHeight($monitor);
+    }
+
+    public function getMonitorPhysicalWidth(int $monitor): int
+    {
+        return $this->ffi->GetMonitorPhysicalWidth($monitor);
+    }
+
+    public function getMonitorPhysicalHeight(int $monitor): int
+    {
+        return $this->ffi->GetMonitorPhysicalHeight($monitor);
+    }
+
+    public function getMonitorRefreshRate(int $monitor): int
+    {
+        return $this->ffi->GetMonitorRefreshRate($monitor);
+    }
+
+    /**
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedPropertyFetch
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function getWindowPosition(): Types\Vector2
+    {
+        $vec = $this->ffi->GetWindowPosition();
+
+        return new Types\Vector2($vec->x, $vec->y);
+    }
+
+    /**
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedPropertyFetch
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function getWindowScaleDPI(): Types\Vector2
+    {
+        $vec = $this->ffi->GetWindowScaleDPI();
+
+        return new Types\Vector2($vec->x, $vec->y);
+    }
+
     /**
      * @psalm-suppress UndefinedPropertyFetch
      * @psalm-suppress MixedArgument
@@ -688,6 +1441,23 @@ final class Raylib implements
     public function getSoundsPlaying(): int
     {
         return $this->ffi->GetSoundsPlaying();
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     * @psalm-suppress MixedArgument
+     */
+    public function getTextureData(Types\Texture2D $texture): Types\Image
+    {
+        $texture = $this->ffi->GetTextureData($texture->toCData($this->ffi));
+
+        return new Types\Image(
+            $texture->data,
+            $texture->width,
+            $texture->height,
+            $texture->mipmaps,
+            $texture->format,
+        );
     }
 
     public function getTime(): float
@@ -734,16 +1504,82 @@ final class Raylib implements
      * @psalm-suppress MixedAssignment
      * @psalm-suppress UndefinedPropertyFetch
      */
+    public function imageColorBrightness(Types\Image $image, int $brightness): void
+    {
+        $imageStruct = $image->toCData($this->ffi);
+        $this->ffi->ImageColorBrightness(FFI::addr($imageStruct), $brightness);
+
+        $image->updateImageObject($image, $imageStruct);
+    }
+
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function imageColorContrast(Types\Image $image, float $contrast): void
+    {
+        $imageStruct = $image->toCData($this->ffi);
+        $this->ffi->ImageColorContrast(FFI::addr($imageStruct), $contrast);
+
+        $image->updateImageObject($image, $imageStruct);
+    }
+
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function imageColorGrayscale(Types\Image $image): void
+    {
+        $imageStruct = $image->toCData($this->ffi);
+        $this->ffi->ImageColorGrayscale(FFI::addr($imageStruct));
+
+        $image->updateImageObject($image, $imageStruct);
+    }
+
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function imageColorInvert(Types\Image $image): void
+    {
+        $imageStruct = $image->toCData($this->ffi);
+        $this->ffi->ImageColorInvert(FFI::addr($imageStruct));
+
+        $image->updateImageObject($image, $imageStruct);
+    }
+
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function imageColorTint(Types\Image $image, Types\Color $color): void
+    {
+        $imageStruct = $image->toCData($this->ffi);
+        $this->ffi->ImageColorTint(FFI::addr($imageStruct), $color->toCData($this->ffi));
+
+        $image->updateImageObject($image, $imageStruct);
+    }
+
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress UndefinedPropertyFetch
+     */
     public function imageCrop(Types\Image $image, Types\Rectangle $crop): void
     {
         $imageStruct = $image->toCData($this->ffi);
-        $this->ffi->ImageCrop($image->updateFromStruct($imageStruct), $crop->toCData($this->ffi));
+        $this->ffi->ImageCrop(FFI::addr($imageStruct), $crop->toCData($this->ffi));
 
-        $image->data = $imageStruct->data;
-        $image->width = $imageStruct->width;
-        $image->height = $imageStruct->height;
-        $image->format = $imageStruct->format;
-        $image->mipmaps = $imageStruct->mipmaps;
+        $image->updateImageObject($image, $imageStruct);
     }
 
     /**
@@ -761,18 +1597,14 @@ final class Raylib implements
     ): void {
         $imageStruct = $dst->toCData($this->ffi);
         $this->ffi->ImageDraw(
-            $dst->updateFromStruct($imageStruct),
+            FFI::addr($imageStruct),
             $src->toCData($this->ffi),
             $srcRec->toCData($this->ffi),
             $dstRec->toCData($this->ffi),
             $tint->toCData($this->ffi)
         );
 
-        $dst->data = $imageStruct->data;
-        $dst->width = $imageStruct->width;
-        $dst->height = $imageStruct->height;
-        $dst->format = $imageStruct->format;
-        $dst->mipmaps = $imageStruct->mipmaps;
+        $dst->updateImageObject($dst, $imageStruct);
     }
 
     /**
@@ -790,18 +1622,14 @@ final class Raylib implements
     ): void {
         $imageStruct = $dst->toCData($this->ffi);
         $this->ffi->ImageDrawCircle(
-            $dst->updateFromStruct($imageStruct),
+            FFI::addr($imageStruct),
             $centerX,
             $centerY,
             $radius,
             $color->toCData($this->ffi)
         );
 
-        $dst->data = $imageStruct->data;
-        $dst->width = $imageStruct->width;
-        $dst->height = $imageStruct->height;
-        $dst->format = $imageStruct->format;
-        $dst->mipmaps = $imageStruct->mipmaps;
+        $dst->updateImageObject($dst, $imageStruct);
     }
 
     /**
@@ -818,17 +1646,13 @@ final class Raylib implements
     ): void {
         $imageStruct = $dst->toCData($this->ffi);
         $this->ffi->ImageDrawPixel(
-            $dst->updateFromStruct($imageStruct),
+            FFI::addr($imageStruct),
             $posX,
             $posY,
             $tint->toCData($this->ffi)
         );
 
-        $dst->data = $imageStruct->data;
-        $dst->width = $imageStruct->width;
-        $dst->height = $imageStruct->height;
-        $dst->format = $imageStruct->format;
-        $dst->mipmaps = $imageStruct->mipmaps;
+        $dst->updateImageObject($dst, $imageStruct);
     }
 
     /**
@@ -847,7 +1671,7 @@ final class Raylib implements
     ): void {
         $imageStruct = $dst->toCData($this->ffi);
         $this->ffi->ImageDrawRectangle(
-            $dst->updateFromStruct($imageStruct),
+            FFI::addr($imageStruct),
             $posX,
             $posY,
             $width,
@@ -855,11 +1679,7 @@ final class Raylib implements
             $color->toCData($this->ffi)
         );
 
-        $dst->data = $imageStruct->data;
-        $dst->width = $imageStruct->width;
-        $dst->height = $imageStruct->height;
-        $dst->format = $imageStruct->format;
-        $dst->mipmaps = $imageStruct->mipmaps;
+        $dst->updateImageObject($dst, $imageStruct);
     }
 
     /**
@@ -879,7 +1699,7 @@ final class Raylib implements
     ): void {
         $imageStruct = $dst->toCData($this->ffi);
         $this->ffi->ImageDrawTextEx(
-            $dst->updateFromStruct($imageStruct),
+            FFI::addr($imageStruct),
             $font->toCData($this->ffi),
             $text,
             $position->toCData($this->ffi),
@@ -898,13 +1718,37 @@ final class Raylib implements
     public function imageFlipHorizontal(Types\Image $image): void
     {
         $imageStruct = $image->toCData($this->ffi);
-        $this->ffi->ImageFlipHorizontal($image->updateFromStruct($imageStruct));
+        $this->ffi->ImageFlipHorizontal(FFI::addr($imageStruct));
 
-        $image->data = $imageStruct->data;
-        $image->width = $imageStruct->width;
-        $image->height = $imageStruct->height;
-        $image->format = $imageStruct->format;
-        $image->mipmaps = $imageStruct->mipmaps;
+        $image->updateImageObject($image, $imageStruct);
+    }
+
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function imageFlipVertical(Types\Image $image): void
+    {
+        $imageStruct = $image->toCData($this->ffi);
+        $this->ffi->ImageFlipVertical(FFI::addr($imageStruct));
+
+        $image->updateImageObject($image, $imageStruct);
+    }
+
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function imageFormat(Types\Image $image, int $newFormat): void
+    {
+        $imageStruct = $image->toCData($this->ffi);
+        $this->ffi->ImageFormat(FFI::addr($imageStruct), $newFormat);
+
+        $image->updateImageObject($image, $imageStruct);
     }
 
     /**
@@ -916,13 +1760,9 @@ final class Raylib implements
     public function imageResize(Types\Image $image, int $newWidth, int $newHeight): void
     {
         $imageStruct = $image->toCData($this->ffi);
-        $this->ffi->ImageResize($image->updateFromStruct($imageStruct), $newWidth, $newHeight);
+        $this->ffi->ImageResize(FFI::addr($imageStruct), $newWidth, $newHeight);
 
-        $image->data = $imageStruct->data;
-        $image->width = $imageStruct->width;
-        $image->height = $imageStruct->height;
-        $image->format = $imageStruct->format;
-        $image->mipmaps = $imageStruct->mipmaps;
+        $image->updateImageObject($image, $imageStruct);
     }
 
     public function initAudioDevice(): void
@@ -945,6 +1785,16 @@ final class Raylib implements
         return $this->ffi->IsKeyPressed($key);
     }
 
+    public function isKeyReleased(int $key): bool
+    {
+        return $this->ffi->IsKeyReleased($key);
+    }
+
+    public function isKeyUp(int $key): bool
+    {
+        return $this->ffi->IsKeyUp($key);
+    }
+
     public function isMouseButtonDown(int $button): bool
     {
         return $this->ffi->IsMouseButtonDown($button);
@@ -955,9 +1805,49 @@ final class Raylib implements
         return $this->ffi->IsMouseButtonPressed($button);
     }
 
+    public function isMouseButtonUp(int $button): bool
+    {
+        return $this->ffi->IsMouseButtonUp($button);
+    }
+
     public function isMouseButtonReleased(int $button): bool
     {
         return $this->ffi->IsMouseButtonReleased($button);
+    }
+
+    public function isWindowFocused(): bool
+    {
+        return $this->ffi->IsWindowFocused();
+    }
+
+    public function isWindowFullscreen(): bool
+    {
+        return $this->ffi->IsWindowFullscreen();
+    }
+
+    public function isWindowHidden(): bool
+    {
+        return $this->ffi->IsWindowHidden();
+    }
+
+    public function isWindowMaximized(): bool
+    {
+        return $this->ffi->IsWindowMaximized();
+    }
+
+    public function isWindowMinimized(): bool
+    {
+        return $this->ffi->IsWindowMinimized();
+    }
+
+    public function isWindowReady(): bool
+    {
+        return $this->ffi->IsWindowReady();
+    }
+
+    public function isWindowResized(): bool
+    {
+        return $this->ffi->IsWindowResized();
     }
 
     public function isWindowState(int $flag): bool
@@ -968,19 +1858,66 @@ final class Raylib implements
     /**
      * @psalm-suppress UndefinedPropertyFetch
      * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedPropertyFetch
      */
     public function loadFont(string $filename): Types\Font
     {
         $font = $this->ffi->LoadFont($filename);
+        $texture = new Types\Texture2D(
+            $font->texture->id,
+            $font->texture->width,
+            $font->texture->height,
+            $font->texture->mipmaps,
+            $font->texture->format
+        );
 
         return new Types\Font(
             $font->baseSize,
             $font->charsCount,
             $font->charsPadding,
-            $font->texture,
+            $texture,
             $font->recs,
             $font->chars
         );
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     * @psalm-suppress InvalidArgument
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArrayAssignment
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedPropertyFetch
+     */
+    public function loadFontEx(string $fileName, int $fontSize, int $fontChars, int $charsCount): Types\Font
+    {
+        $fontCharsPointer = $this->ffi->new('int*');
+
+        $font = $this->ffi->LoadFontEx($fileName, $fontSize, $fontCharsPointer, $charsCount);
+
+        $texture = new Types\Texture2D(
+            $font->texture->id,
+            $font->texture->width,
+            $font->texture->height,
+            $font->texture->mipmaps,
+            $font->texture->format,
+        );
+
+        return new Types\Font(
+            $font->baseSize,
+            $font->charsCount,
+            $font->charsPadding,
+            $texture,
+            $font->recs,
+            $font->chars
+        );
+    }
+
+    public function loadImageColors(Types\Image $image): CData
+    {
+        return $this->ffi->LoadImageColors($image->toCData($this->ffi));
     }
 
     /**
@@ -992,6 +1929,42 @@ final class Raylib implements
         $image = $this->ffi->LoadImage($filename);
 
         return new Types\Image($image->data, $image->width, $image->height, $image->mipmaps, $image->format);
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedPropertyFetch
+     */
+    public function loadModel(string $filename): Types\Model
+    {
+        $model = $this->ffi->LoadModel($filename);
+
+        return new Types\Model(
+            $model->transform,
+            $model->meshCount,
+            $model->materialCount,
+            $model->meshes,
+            $model->materials,
+            $model->meshMaterial,
+            $model->boneCount,
+            $model->bones,
+            $model->bindPose,
+        );
+    }
+
+    /**
+     * @psalm-suppress UndefinedPropertyFetch
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedPropertyFetch
+     */
+    public function loadModelAnimations(string $filename, int &$animationsCount): CData
+    {
+        $count = $this->ffi->new('int');
+        $animations = $this->ffi->LoadModelAnimations($filename, FFI::addr($count));
+        $animationsCount = (int) $count->cdata;
+
+        return $animations;
     }
 
     /**
@@ -1076,6 +2049,39 @@ final class Raylib implements
         );
     }
 
+    /**
+     * @psalm-suppress InvalidPassByReference
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedPropertyFetch
+     * @psalm-suppress UndefinedPropertyFetch
+     */
+    public function loadRenderTexture(int $width, int $height): Types\RenderTexture2D
+    {
+        $renderTexture = $this->ffi->LoadRenderTexture($width, $height);
+        $texture = new Types\Texture2D(
+            $renderTexture->texture->id,
+            $renderTexture->texture->width,
+            $renderTexture->texture->height,
+            $renderTexture->texture->mipmaps,
+            $renderTexture->texture->format,
+        );
+
+        $depth = new Types\Texture2D(
+            $renderTexture->depth->id,
+            $renderTexture->depth->width,
+            $renderTexture->depth->height,
+            $renderTexture->depth->mipmaps,
+            $renderTexture->depth->format,
+        );
+
+        return new Types\RenderTexture2D(
+            $renderTexture->id,
+            $texture,
+            $depth
+        );
+    }
+
     public function maximizeWindow(): void
     {
         $this->ffi->MaximizeWindow();
@@ -1131,9 +2137,44 @@ final class Raylib implements
         $this->ffi->SetCameraMode($camera->toCData($this->ffi), $mode);
     }
 
+    public function setClipboardText(string $text): void
+    {
+        $this->ffi->SetClipboardText($text);
+    }
+
     public function setConfigFlags(int $flags): void
     {
         $this->ffi->SetConfigFlags($flags);
+    }
+
+    public function setExitKey(int $key): void
+    {
+        $this->ffi->SetExitKey($key);
+    }
+
+    /**
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArgument
+     */
+    public function setMaterialTexture(CData $material, int $mapType, Types\Texture2D $texture): void
+    {
+        $materialAddr = FFI::addr($material);
+        $this->ffi->SetMaterialTexture($materialAddr, $mapType, $texture->toCData($this->ffi));
+    }
+
+    public function setMousePosition(int $x, int $y): void
+    {
+        $this->ffi->SetMousePosition($x, $y);
+    }
+
+    public function setMouseOffset(int $offsetX, int $offsetY): void
+    {
+        $this->SetMouseScale($offsetX, $offsetY);
+    }
+
+    public function setMouseScale(float $scaleX, float $scaleY): void
+    {
+        $this->SetMouseScale($scaleX, $scaleY);
     }
 
     public function setMusicPitch(Types\Music $music, float $pitch): void
@@ -1156,9 +2197,69 @@ final class Raylib implements
         $this->ffi->SetTextureFilter($texture->toCData($this->ffi), $filterMode);
     }
 
+    public function setWindowIcon(Types\Image $image): void
+    {
+        $this->ffi->SetWindowIcon($image->toCData($this->ffi));
+    }
+
+    public function setWindowMinSize(int $width, int $height): void
+    {
+        $this->ffi->SetWindowMinSize($width, $height);
+    }
+
+    public function setWindowMonitor(int $monitor): void
+    {
+        $this->ffi->SetWindowMonitor($monitor);
+    }
+
+    public function setWindowPosition(int $x, int $y): void
+    {
+        $this->ffi->SetWindowPosition($x, $y);
+    }
+
+    public function setWindowSize(int $width, int $height): void
+    {
+        $this->ffi->SetWindowSize($width, $height);
+    }
+
     public function setWindowState(int $flags): void
     {
         $this->ffi->SetWindowState($flags);
+    }
+
+    public function setWindowTitle(string $title): void
+    {
+        $this->ffi->SetWindowTitle($title);
+    }
+
+    public function showCursor(): void
+    {
+        $this->ffi->ShowCursor();
+    }
+
+    public function hideCursor(): void
+    {
+        $this->ffi->HideCursor();
+    }
+
+    public function isCursorHidden(): bool
+    {
+        return $this->ffi->IsCursorHidden();
+    }
+
+    public function enableCursor(): void
+    {
+        $this->ffi->EnableCursor();
+    }
+
+    public function disableCursor(): void
+    {
+        $this->ffi->DisableCursor();
+    }
+
+    public function isCursorOnScreen(): bool
+    {
+        return $this->ffi->IsCursorOnScreen();
     }
 
     public function stopMusicStream(Types\Music $music): void
@@ -1180,6 +2281,17 @@ final class Raylib implements
         return sprintf($format, ...$args);
     }
 
+    /**
+     * @psalm-suppress MissingParamType
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedPropertyFetch
+     */
+    public function updateTexture(Types\Texture2D $texture, CDATA $pixels): void
+    {
+        $this->ffi->UpdateTexture($texture->toCData($this->ffi), $pixels);
+    }
+
     public function textSubtext(string $text, int $position, int $length): string
     {
         return $this->ffi->TextSubtext($text, $position, $length);
@@ -1195,14 +2307,37 @@ final class Raylib implements
         $this->ffi->ToggleFullscreen();
     }
 
+    /**
+     * @param mixed[] $args
+     */
+    public function traceLog(int $type, string $format, ...$args): void
+    {
+        $this->ffi->TraceLog($type, $format, ...$args);
+    }
+
     public function unloadImage(Types\Image $image): void
     {
         $this->ffi->UnloadImage($image->toCData($this->ffi));
     }
 
+    public function unloadModel(Types\Model $model): void
+    {
+        $this->ffi->UnloadModel($model->toCData($this->ffi));
+    }
+
+    public function unloadModelAnimation(CData $animation): void
+    {
+        $this->ffi->UnloadModelAnimation($animation);
+    }
+
     public function unloadMusicStream(Types\Music $music): void
     {
         $this->ffi->UnloadMusicStream($music->toCData($this->ffi));
+    }
+
+    public function unloadRenderTexture(Types\RenderTexture2D $target): void
+    {
+        $this->ffi->UnloadRenderTexture($target->toCData($this->ffi));
     }
 
     public function unloadSound(Types\Sound $sound): void
@@ -1242,7 +2377,16 @@ final class Raylib implements
         $camera->up->z = $cdata->up->z;
 
         $camera->fovy = $cdata->fovy;
-        $camera->projection = $cdata->type;
+        $camera->projection = $cdata->projection;
+    }
+
+    public function updateModelAnimation(Types\Model $model, CData $animation, int $frame): void
+    {
+        $this->ffi->UpdateModelAnimation(
+            $model->toCData($this->ffi),
+            $animation,
+            $frame,
+        );
     }
 
     public function updateMusicStream(Types\Music $music): void

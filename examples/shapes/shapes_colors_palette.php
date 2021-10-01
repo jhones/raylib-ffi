@@ -3,13 +3,30 @@
 declare(strict_types=1);
 
 use Nawarian\Raylib\Raylib;
-use Nawarian\Raylib\RaylibFactory;
 use Nawarian\Raylib\Types\{Color, Rectangle};
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+use function Nawarian\Raylib\{
+    BeginDrawing,
+    CheckCollisionPointRec,
+    ClearBackground,
+    CloseWindow,
+    DrawRectangle,
+    DrawRectangleLinesEx,
+    DrawRectangleRec,
+    DrawText,
+    EndDrawing,
+    Fade,
+    GetMousePosition,
+    GetScreenHeight,
+    GetScreenWidth,
+    InitWindow,
+    IsKeyDown,
+    MeasureText,
+    SetTargetFPS,
+    WindowShouldClose
+};
 
-$raylibFactory = new RaylibFactory();
-$raylib = $raylibFactory->newInstance();
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 const MAX_COLORS_COUNT = 21;
 
@@ -18,7 +35,7 @@ const MAX_COLORS_COUNT = 21;
 $screenWidth = 800;
 $screenHeight = 450;
 
-$raylib->initWindow($screenWidth, $screenHeight, 'raylib [shapes] example - colors palette');
+InitWindow($screenWidth, $screenHeight, 'raylib [shapes] example - colors palette');
 
 $colors = [
     Color::darkGray(),
@@ -63,17 +80,17 @@ for ($i = 0; $i < MAX_COLORS_COUNT; $i++) {
 
 $colorState = array_fill(0, MAX_COLORS_COUNT, 0); // Color state: 0-DEFAULT, 1-MOUSE_HOVER
 
-$raylib->setTargetFPS(60);               // Set our game to run at 60 frames-per-second
+SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 //--------------------------------------------------------------------------------------
 
 // Main game loop
-while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC key
+while (!WindowShouldClose()) {   // Detect window close button or ESC key
     // Update
     //----------------------------------------------------------------------------------
-    $mousePoint = $raylib->getMousePosition();
+    $mousePoint = GetMousePosition();
 
     for ($i = 0; $i < MAX_COLORS_COUNT; $i++) {
-        if ($raylib->checkCollisionPointRec($mousePoint, $colorsRecs[$i])) {
+        if (CheckCollisionPointRec($mousePoint, $colorsRecs[$i])) {
             $colorState[$i] = 1;
         } else {
             $colorState[$i] = 0;
@@ -83,36 +100,28 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
 
     // Draw
     //----------------------------------------------------------------------------------
-    $raylib->beginDrawing();
+    BeginDrawing();
         // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 
-        $raylib->clearBackground(Color::rayWhite());
+        ClearBackground(Color::rayWhite());
 
-        $raylib->drawText('raylib colors palette', 28, 42, 20, Color::blue());
-        $raylib->drawText(
-            'press SPACE to see all colors',
-            $raylib->getScreenWidth() - 180,
-            $raylib->getScreenHeight() - 40,
-            10,
-            Color::gray()
-        );
+        DrawText('raylib colors palette', 28, 42, 20, Color::blue());
+        DrawText('press SPACE to see all colors', GetScreenWidth() - 180, GetScreenHeight() - 40, 10, Color::gray());
 
         for ($i = 0; $i < MAX_COLORS_COUNT; $i++) {   // Draw all rectangles
-            $raylib->drawRectangleRec($colorsRecs[$i], $raylib->fade($colors[$i], $colorState[$i] ? 0.6 : 1.0));
-            if ($raylib->isKeyDown(Raylib::KEY_SPACE) || $colorState[$i]) {
-                $raylib->drawRectangle(
+            DrawRectangleRec($colorsRecs[$i], Fade($colors[$i], $colorState[$i] ? 0.6 : 1.0));
+            if (IsKeyDown(Raylib::KEY_SPACE) || $colorState[$i]) {
+                DrawRectangle(
                     $colorsRecs[$i]->x,
                     $colorsRecs[$i]->y + $colorsRecs[$i]->height - 26,
                     $colorsRecs[$i]->width,
                     20,
-                    Color::black(),
+                    Color::black()
                 );
-                $raylib->drawRectangleLinesEx($colorsRecs[$i], 6, $raylib->fade(Color::black(), 0.3));
-                $raylib->drawText(
+                DrawRectangleLinesEx($colorsRecs[$i], 6, Fade(Color::black(), 0.3));
+                DrawText(
                     $colorNames[$i],
-                    (int) (
-                        $colorsRecs[$i]->x + $colorsRecs[$i]->width - $raylib->measureText($colorNames[$i], 10) - 12
-                    ),
+                    (int) (MeasureText($colorNames[$i], 10) - $colorsRecs[$i]->x + $colorsRecs[$i]->width - 12),
                     (int) ($colorsRecs[$i]->y + $colorsRecs[$i]->height - 20),
                     10,
                     $colors[$i]
@@ -121,11 +130,11 @@ while (!$raylib->windowShouldClose()) {   // Detect window close button or ESC k
         }
 
         // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-    $raylib->endDrawing();
+    EndDrawing();
     //----------------------------------------------------------------------------------
 }
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
-$raylib->closeWindow();                // Close window and OpenGL context
+CloseWindow();                // Close window and OpenGL context
 //--------------------------------------------------------------------------------------
